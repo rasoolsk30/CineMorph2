@@ -124,7 +124,11 @@ class MainActivity : AppCompatActivity() {
         }
         root.addView(search, LinearLayout.LayoutParams(-1, dp(50)).apply { bottomMargin = dp(12) })
         categoryBar = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        root.addView(categoryBar, LinearLayout.LayoutParams(-1, dp(44)).apply { bottomMargin = dp(8) })
+        val categoryScroll = HorizontalScrollView(this).apply {
+            isHorizontalScrollBarEnabled = false
+            addView(categoryBar, ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        }
+        root.addView(categoryScroll, LinearLayout.LayoutParams(-1, dp(44)).apply { bottomMargin = dp(8) })
         val scroll = ScrollView(this).apply { isFillViewport = false; clipToPadding = false }
         list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(0, dp(4), 0, dp(12)) }
         scroll.addView(list)
@@ -238,7 +242,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildCategories() {
         categoryBar.removeAllViews()
-        listOf("All videos", "Folders", "Recent", "Large").forEach { category ->
+        listOf("All videos", "Folders", "Recent", "Large", "Collection", "History").forEach { category ->
             val selected = selectedCategory == category
             categoryBar.addView(TextView(this).apply {
                 text = category; textSize = 11f; gravity = Gravity.CENTER; isAllCaps = false
@@ -246,7 +250,7 @@ class MainActivity : AppCompatActivity() {
                 setPadding(dp(12), 0, dp(12), 0)
                 background = rounded(if (selected) 0xff6659d7.toInt() else 0xff172135.toInt(), 18, if (selected) 0xff887cf1.toInt() else 0xff293650.toInt())
                 setOnClickListener { selectedCategory = category; selectedFolder = null; buildCategories(); renderVideos() }
-            }, LinearLayout.LayoutParams(0, dp(36), 1f).apply { marginEnd = dp(5) })
+            }, LinearLayout.LayoutParams(-2, dp(36)).apply { marginEnd = dp(7) })
         }
     }
 
@@ -295,10 +299,58 @@ class MainActivity : AppCompatActivity() {
             if (resumeMs > 5000L) details.addView(label("▶ Resume ${formatDuration(resumeMs)}", 10f, 0xffa99cff.toInt()).apply { setPadding(0, dp(3), 0, 0) })
             details.addView(label(formatSize(video.size), 10f, 0xff71819e.toInt()).apply { setPadding(0, dp(3), 0, 0) })
             card.addView(details)
+            val savedUris = getSharedPreferences("collections", MODE_PRIVATE).getStringSet("favorites", emptySet()).orEmpty()
+            val isSaved = video.uri.toString() in savedUris
+            card.addView(TextView(this).apply {
+                text = if (isSaved) "★" else "☆"; textSize = 23f; gravity = Gravity.CENTER
+                setTextColor(if (isSaved) 0xffffd36b.toInt() else 0xff8b96ad.toInt())
+                setPadding(dp(8), dp(8), dp(8), dp(8))
+                setOnClickListener {
+                    val prefs = getSharedPreferences("collections", MODE_PRIVATE)
+                    val updated = prefs.getStringSet("favorites", emptySet()).orEmpty().toMutableSet()
+                    if (!updated.add(video.uri.toString())) updated.remove(video.uri.toString())
+                    prefs.edit().putStringSet("favorites", updated).apply()
+                    renderVideos()
+                }
+            })
             card.addView(label("›", 25f, 0xff9e91ff.toInt()))
             list.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(9) })
         }
         if (filtered.isEmpty()) emptyMessage()
+    }
+
+    private fun renderWatchHistory() {
+        list.removeAllViews()
+        val records = getSharedPreferences("watch_history", MODE_PRIVATE)
+            .getString("items", "").orEmpty().lineSequence()
+            .filter { it.isNotBlank() }
+            .mapNotNull { line ->
+                val parts = line.split("\t")
+                if (parts.size < 5) null else parts
+            }.toList()
+        count.text = records.size.toString() + " recently watched"
+        if (records.isEmpty()) {
+            list.addView(label("Your watch history will appear here after you play a video.", 14f, 0xff9ba8bf.toInt()).apply { setPadding(dp(8), dp(24), dp(8), dp(24)) })
+            return
+        }
+        records.forEach { parts ->
+            val uri = runCatching { Uri.parse(parts[0]) }.getOrNull() ?: return@forEach
+            val title = parts[1].ifBlank { "Video" }
+            val position = parts[2].toLongOrNull() ?: 0L
+            val duration = parts[4].toLongOrNull() ?: 0L
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                setPadding(dp(13), dp(13), dp(13), dp(13))
+                background = rounded(0xff151e30.toInt(), 15, 0xff27344d.toInt())
+                setOnClickListener { openPlayer(uri) }
+            }
+            val info = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; layoutParams = LinearLayout.LayoutParams(0, -2, 1f) }
+            info.addView(label(title, 14f, Color.WHITE, true))
+            info.addView(label("Watched " + formatDuration(position) + " / " + formatDuration(duration), 11f, 0xffa99cff.toInt()).apply { setPadding(0, dp(5), 0, 0) })
+            row.addView(info)
+            row.addView(label("▶", 20f, 0xffa99cff.toInt()))
+            list.addView(row, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(8) })
+        }
     }
 
     private fun showFolderVideos(folder: String) {
