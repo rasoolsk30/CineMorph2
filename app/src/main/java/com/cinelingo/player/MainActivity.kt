@@ -284,10 +284,16 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
-        filtered = when (sortMode) {
-            "Name" -> filtered.sortedBy { it.name.lowercase(Locale.ROOT) }
-            "Size" -> filtered.sortedByDescending { it.size }
-            else -> filtered.sortedByDescending { it.date }
+        // Category ordering must win over the general Sort setting.
+        // Previously the global sort immediately overwrote Recent and Large ordering.
+        filtered = when (selectedCategory) {
+            "Recent" -> filtered.sortedByDescending { it.date }.take(30)
+            "Large" -> filtered.sortedByDescending { it.size }
+            else -> when (sortMode) {
+                "Name" -> filtered.sortedBy { it.name.lowercase(Locale.ROOT) }
+                "Size" -> filtered.sortedByDescending { it.size }
+                else -> filtered.sortedByDescending { it.date }
+            }
         }
         count.text = "${filtered.size} videos · Sort: $sortMode"
         filtered.forEachIndexed { index, video ->
