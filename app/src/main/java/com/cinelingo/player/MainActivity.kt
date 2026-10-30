@@ -263,6 +263,14 @@ class MainActivity : AppCompatActivity() {
         when (selectedCategory) {
             "Recent" -> filtered = filtered.sortedByDescending { it.date }.take(30)
             "Large" -> filtered = filtered.sortedByDescending { it.size }
+            "Collection" -> {
+                val saved = getSharedPreferences("collections", MODE_PRIVATE).getStringSet("favorites", emptySet()).orEmpty()
+                filtered = filtered.filter { it.uri.toString() in saved }
+            }
+            "History" -> {
+                renderWatchHistory()
+                return
+            }
             "Folders" -> {
                 val folders = filtered.groupBy { it.folder }.toSortedMap()
                 count.text = "${folders.size} folders · ${filtered.size} videos"
