@@ -193,30 +193,62 @@ class PlayerActivity : AppCompatActivity() {
         player = p
         playerView.player = p
         p.setMediaItem(MediaItem.fromUri(videoUri))
-        val saved = getSharedPreferences("resume", MODE_PRIVATE).getLong(videoUri.toString(), 0L)
-        if (saved > 0) p.seekTo(saved)
+        val resumePrefs = getSharedPreferences("resume", MODE_PRIVATE)
+        val saved = resumePrefs.getLong(videoUri.toString(), 0L)
         p.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 saveHistory()
                 publishPlayback()
+            }
+            override fun onTracksChanged(tracks: androidx.media3.common.Tracks) {
+                updateAudioTrackButtonUI()
             }
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_READY) {
                     saveHistory()
                     updateAudioTrackButtonUI()
                 }
-                if (playbackState == Player.STATE_ENDED) playAdjacent(1)
+                if (playbackState == Player.STATE_ENDED) {
+                    resumePrefs.edit().remove(videoUri.toString()).apply()
+                    playAdjacent(1)
+                }
             }
             override fun onPlayerError(error: PlaybackException) {
                 if (error.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED) {
-                    showHud("Hardware decoder init failed. Auto-switched to software fallback.")
+                    AlertDialog.Builder(this@PlayerActivity)
+                        .setTitle("This device could not decode the video")
+                        .setMessage("The phone's available media decoder could not initialize this file's codec/profile. Decoder fallback is enabled, but Android does not provide a compatible decoder for every format. You can try opening this same file in another installed video player.")
+                        .setPositiveButton("Open in another player") { _, _ -> openVideoInExternalPlayer() }
+                        .setNegativeButton("Close", null)
+                        .show()
                 } else {
                     showHud("Playback error: ${error.errorCodeName}")
                 }
             }
         })
-        p.prepare()
-        p.play()
+        if (saved > 5000L) {
+            p.playWhenReady = false
+            AlertDialog.Builder(this)
+                .setTitle("Continue watching?")
+                .setMessage("You stopped at ${fmt(saved)}. Would you like to continue from where you left off?")
+                .setPositiveButton("CURRENT · Resume") { _, _ ->
+                    p.seekTo(saved)
+                    p.prepare()
+                    p.play()
+                }
+                .setNegativeButton("START OVER") { _, _ ->
+                    resumePrefs.edit().remove(videoUri.toString()).apply()
+                    p.seekTo(0L)
+                    p.prepare()
+                    p.play()
+                }
+                .setCancelable(false)
+                .show()
+        } else {
+            resumePrefs.edit().remove(videoUri.toString()).apply()
+            p.prepare()
+            p.play()
+        }
         loadCachedSubtitle()
         autoScanLocalSubtitles(videoUri)
 
@@ -250,10 +282,20 @@ class PlayerActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.btn_language).setOnClickListener { showLanguagePicker() }
         findViewById<Button>(R.id.btn_audio_track).setOnClickListener { showAudioTrackPicker() }
-        findViewById<Button>(R.id.btn_sub_minus).setOnClickListener { subtitleOffsetMs = (subtitleOffsetMs - 500).coerceAtLeast(-10000); saveSubtitlePrefs(); updateSubtitleSyncIndicator(); showHud("Subtitle offset ${subtitleOffsetMs}ms"); updateSubtitle() }
-        findViewById<Button>(R.id.btn_sub_plus).setOnClickListener { subtitleOffsetMs = (subtitleOffsetMs + 500).coerceAtMost(10000); saveSubtitlePrefs(); updateSubtitleSyncIndicator(); showHud("Subtitle offset +${subtitleOffsetMs}ms"); updateSubtitle() }
-        findViewById<Button>(R.id.btn_sub_style).setOnClickListener { showSubtitleStylePicker() }
-        findViewById<Button>(R.id.btn_translate_srt).setOnClickListener { translateLoadedSubtitle() }
+        findViewById<Button>(R.id.btn_sub_minus).setOnClickListener {
+            subtitleOffsetMs = (subtitleOffsetMs - 500).coerceAtLeast(-10000)
+            saveSubtitlePrefs(); updateSubtitleSyncIndicator(); showHud("Subtitle offset ${subtitleOffsetMs}ms"); updateSubtitle()
+        }
+        findViewById<Button>(R.id.btn_sub_plus).setOnClickListener {
+            subtitleOffsetMs = (subtitleOffsetMs + 500).coerceAtMost(10000)
+            saveSubtitlePrefs(); updateSubtitleSyncIndicator(); showHud("Subtitle offset +${subtitleOffsetMs}ms"); updateSubtitle()
+        }
+        findViewById<Button>(R.id.btn_sub_style).setOnClickListener {
+            showSubtitleStylePicker()
+        }
+        findViewById<Button>(R.id.btn_translate_srt).setOnClickListener {
+            translateLoadedSubtitle()
+        }
         findViewById<Button>(R.id.btn_scene_search).setOnClickListener { showSceneSearch() }
         findViewById<Button>(R.id.btn_cowatch).setOnClickListener { showCoWatchDialog() }
         findViewById<Button>(R.id.btn_dub_preview).setOnClickListener { showDubPreview() }
@@ -826,65 +868,70 @@ class PlayerActivity : AppCompatActivity() {
         val selector = trackSelector
         val mapped = selector?.currentMappedTrackInfo
         if (selector == null || mapped == null) {
-            showHud("Audio tracks are loading…")
+            showHud("Audio track information is not available yet. Wait until the video has initialized.")
             return
         }
         val groups = mapped.getTrackGroups(C.TRACK_TYPE_AUDIO)
-        val entries = mutableListOf<String>()
-        val choices = mutableListOf<Pair<Int, Int>>()
-        entries.add("System default (Original audio)")
-        choices.add(-1 to -1)
+        if (groups.length == 0) {
+            showHud("This video has no selectable embedded audio tracks.")
+            return
+        }
 
+        val entries = mutableListOf("System default (Auto)")
+        val choices = mutableListOf<Pair<Int, Int>>(-1 to -1)
         for (g in 0 until groups.length) {
             val group = groups[g]
             for (t in 0 until group.length) {
                 val f = group.getFormat(t)
-                val lang = f.language?.takeIf { it.isNotBlank() && it != "und" }
+                val language = f.language?.takeIf { it.isNotBlank() && it != "und" }
                     ?.let { Locale.forLanguageTag(it).getDisplayLanguage(Locale.getDefault()) }
-                    ?: f.label?.takeIf { it.isNotBlank() }
-                    ?: "Track ${t + 1}"
-                val codec = f.sampleMimeType?.substringAfter("audio/")?.uppercase() ?: "AUDIO"
-                val channels = f.channelCount.takeIf { it > 0 }?.let { "${it}ch" } ?: ""
-                val detail = listOfNotNull(lang, codec, channels.takeIf { it.isNotEmpty() }).joinToString(" · ")
-                entries.add(detail)
+                val label = f.label?.takeIf { it.isNotBlank() && it != "und" }
+                val name = language ?: label ?: "Audio track"
+                val codec = f.sampleMimeType?.substringAfter("audio/")?.uppercase(Locale.ROOT) ?: "AUDIO"
+                val channels = f.channelCount.takeIf { it > 0 }?.let { "${it}ch" }
+                val bitrate = f.bitrate.takeIf { it > 0 }?.let { "${it / 1000} kbps" }
+                val details = listOfNotNull(name, codec, channels, bitrate).distinct().joinToString(" · ")
+                entries.add("$details  [Group ${g + 1}, Track ${t + 1}]")
                 choices.add(g to t)
             }
         }
 
-        if (entries.size == 2 && choices[1].first >= 0) {
-            val trackName = entries[1]
-            AlertDialog.Builder(this)
-                .setTitle("Audio Track Information")
-                .setMessage("Active Track: $trackName\n\nThis video contains 1 embedded audio track.")
-                .setPositiveButton("Keep Selected", null)
-                .setNeutralButton("System Default") { _, _ ->
-                    val builder = selector.buildUponParameters().clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-                    selector.parameters = builder.build()
-                    updateAudioTrackButtonUI()
-                    showHud("Audio: System Default")
-                }
-                .show()
-            return
-        }
-
         AlertDialog.Builder(this)
-            .setTitle("Select Audio Language / Track")
+            .setTitle("Select audio language / track")
             .setItems(entries.toTypedArray()) { _, which ->
                 val (groupIndex, trackIndex) = choices[which]
-                val builder = selector.buildUponParameters()
-                if (groupIndex < 0) {
-                    builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-                } else {
-                    val group = groups[groupIndex]
-                    builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-                        .setOverrideForType(TrackSelectionOverride(group, listOf(trackIndex)))
+                try {
+                    val builder = selector.buildUponParameters().clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+                    if (groupIndex >= 0) {
+                        val group = groups[groupIndex]
+                        if (trackIndex !in 0 until group.length) {
+                            showHud("That audio track is no longer available. Reopen the track list.")
+                            return@setItems
+                        }
+                        builder.setOverrideForType(TrackSelectionOverride(group, listOf(trackIndex)))
+                    }
+                    selector.parameters = builder.build()
+                    updateAudioTrackButtonUI()
+                    showHud(if (groupIndex < 0) "Audio: System default" else "Audio selection requested: ${entries[which]}")
+                } catch (e: Exception) {
+                    showHud("Could not select audio track: ${e.localizedMessage ?: e.javaClass.simpleName}")
                 }
-                selector.parameters = builder.build()
-                updateAudioTrackButtonUI()
-                showHud("Audio switched: ${entries[which]}")
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun openVideoInExternalPlayer() {
+        player?.pause()
+        val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(videoUri, "video/*")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(Intent.createChooser(viewIntent, "Open video with"))
+        } catch (_: android.content.ActivityNotFoundException) {
+            showHud("No compatible external video player is installed.")
+        }
     }
 
     private fun updateAudioTrackButtonUI() {
@@ -1397,7 +1444,16 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        player?.let { getSharedPreferences("resume", MODE_PRIVATE).edit().putLong(videoUri.toString(), it.currentPosition).apply(); saveHistory(); it.pause() }
+        player?.let {
+            val resumePrefs = getSharedPreferences("resume", MODE_PRIVATE)
+            if (it.playbackState == Player.STATE_ENDED) {
+                resumePrefs.edit().remove(videoUri.toString()).apply()
+            } else {
+                resumePrefs.edit().putLong(videoUri.toString(), it.currentPosition).apply()
+                saveHistory()
+            }
+            it.pause()
+        }
         stopVoiceRecognition()
     }
     override fun onDestroy() {

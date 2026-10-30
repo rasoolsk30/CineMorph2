@@ -1731,9 +1731,6 @@ export const CinemaPlayer: React.FC = () => {
                 )}
               </div>
             )}
-                  <Layers className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="hidden sm:inline">Transcript</span>
-                </button>
 
                 {/* Picture Boost Pill */}
                 <div 

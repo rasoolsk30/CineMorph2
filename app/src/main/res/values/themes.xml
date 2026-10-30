@@ -1,6 +1,9 @@
 <resources>
-    <style name="Theme.CineLingo" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="colorAccent">#8174F2</item>
+    <style name="Theme.CineLingo" parent="Theme.AppCompat.NoActionBar">
+        <item name="colorAccent">#9B8CFF</item>
+        <item name="android:colorAccent">#9B8CFF</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:colorControlHighlight">#556B5CE7</item>
         <item name="android:statusBarColor">#090D18</item>
         <item name="android:navigationBarColor">#090D18</item>
         <item name="android:windowLightStatusBar">false</item>
