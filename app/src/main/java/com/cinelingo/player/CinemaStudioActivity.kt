@@ -65,7 +65,7 @@ class CinemaStudioActivity : AppCompatActivity() {
             text = "Configure / Open AI Studio"; isAllCaps = false
             setOnClickListener { configureAndOpenWebStudio() }
         })
-        root.addView(webCard)
+        root.addView(webCard, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(14) })
         val localCard = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(17), dp(17), dp(17), dp(17)); background = panel()
         }
@@ -77,7 +77,6 @@ class CinemaStudioActivity : AppCompatActivity() {
         })
         val lp = LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(14) }
         root.addView(localCard, lp)
-        root.addView(webCard, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(14) })
         setContentView(root)
     }
 
