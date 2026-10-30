@@ -193,30 +193,57 @@ class PlayerActivity : AppCompatActivity() {
         player = p
         playerView.player = p
         p.setMediaItem(MediaItem.fromUri(videoUri))
-        val saved = getSharedPreferences("resume", MODE_PRIVATE).getLong(videoUri.toString(), 0L)
-        if (saved > 0) p.seekTo(saved)
+        val resumePrefs = getSharedPreferences("resume", MODE_PRIVATE)
+        val saved = resumePrefs.getLong(videoUri.toString(), 0L)
         p.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 saveHistory()
                 publishPlayback()
+            }
+            override fun onTracksChanged(tracks: androidx.media3.common.Tracks) {
+                updateAudioTrackButtonUI()
             }
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_READY) {
                     saveHistory()
                     updateAudioTrackButtonUI()
                 }
-                if (playbackState == Player.STATE_ENDED) playAdjacent(1)
+                if (playbackState == Player.STATE_ENDED) {
+                    resumePrefs.edit().remove(videoUri.toString()).apply()
+                    playAdjacent(1)
+                }
             }
             override fun onPlayerError(error: PlaybackException) {
                 if (error.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED) {
-                    showHud("Hardware decoder init failed. Auto-switched to software fallback.")
+                    showHud("Decoder initialization failed. This device may not support this file's codec/profile. Try another decoder-compatible file.")
                 } else {
                     showHud("Playback error: ${error.errorCodeName}")
                 }
             }
         })
-        p.prepare()
-        p.play()
+        if (saved > 5000L) {
+            p.playWhenReady = false
+            AlertDialog.Builder(this)
+                .setTitle("Continue watching?")
+                .setMessage("You stopped at ${fmt(saved)}. Would you like to continue from where you left off?")
+                .setPositiveButton("CURRENT · Resume") { _, _ ->
+                    p.seekTo(saved)
+                    p.prepare()
+                    p.play()
+                }
+                .setNegativeButton("START OVER") { _, _ ->
+                    resumePrefs.edit().remove(videoUri.toString()).apply()
+                    p.seekTo(0L)
+                    p.prepare()
+                    p.play()
+                }
+                .setCancelable(false)
+                .show()
+        } else {
+            resumePrefs.edit().remove(videoUri.toString()).apply()
+            p.prepare()
+            p.play()
+        }
         loadCachedSubtitle()
         autoScanLocalSubtitles(videoUri)
 
@@ -823,65 +850,50 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun showAudioTrackPicker() {
+        if (lockState != LockState.UNLOCKED) return
         val selector = trackSelector
         val mapped = selector?.currentMappedTrackInfo
-        if (selector == null || mapped == null) {
-            showHud("Audio tracks are loading…")
+        if (selector == null || mapped == null || player?.playbackState == Player.STATE_IDLE) {
+            showHud("Audio tracks are still loading. Try again after playback starts.")
             return
         }
         val groups = mapped.getTrackGroups(C.TRACK_TYPE_AUDIO)
-        val entries = mutableListOf<String>()
-        val choices = mutableListOf<Pair<Int, Int>>()
-        entries.add("System default (Original audio)")
-        choices.add(-1 to -1)
+        if (groups.length == 0) {
+            showHud("This video has no selectable embedded audio tracks.")
+            return
+        }
 
+        val entries = mutableListOf("System default (Auto)")
+        val choices = mutableListOf<Pair<Int, Int>>(-1 to -1)
         for (g in 0 until groups.length) {
             val group = groups[g]
             for (t in 0 until group.length) {
                 val f = group.getFormat(t)
-                val lang = f.language?.takeIf { it.isNotBlank() && it != "und" }
+                val language = f.language?.takeIf { it.isNotBlank() && it != "und" }
                     ?.let { Locale.forLanguageTag(it).getDisplayLanguage(Locale.getDefault()) }
-                    ?: f.label?.takeIf { it.isNotBlank() }
-                    ?: "Track ${t + 1}"
-                val codec = f.sampleMimeType?.substringAfter("audio/")?.uppercase() ?: "AUDIO"
-                val channels = f.channelCount.takeIf { it > 0 }?.let { "${it}ch" } ?: ""
-                val detail = listOfNotNull(lang, codec, channels.takeIf { it.isNotEmpty() }).joinToString(" · ")
-                entries.add(detail)
+                val label = f.label?.takeIf { it.isNotBlank() && it != "und" }
+                val name = language ?: label ?: "Audio track"
+                val codec = f.sampleMimeType?.substringAfter("audio/")?.uppercase(Locale.ROOT) ?: "AUDIO"
+                val channels = f.channelCount.takeIf { it > 0 }?.let { "${it}ch" }
+                val bitrate = f.bitrate.takeIf { it > 0 }?.let { "${it / 1000} kbps" }
+                val details = listOfNotNull(name, codec, channels, bitrate).distinct().joinToString(" · ")
+                entries.add("$details  [Group ${g + 1}, Track ${t + 1}]")
                 choices.add(g to t)
             }
         }
 
-        if (entries.size == 2 && choices[1].first >= 0) {
-            val trackName = entries[1]
-            AlertDialog.Builder(this)
-                .setTitle("Audio Track Information")
-                .setMessage("Active Track: $trackName\n\nThis video contains 1 embedded audio track.")
-                .setPositiveButton("Keep Selected", null)
-                .setNeutralButton("System Default") { _, _ ->
-                    val builder = selector.buildUponParameters().clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-                    selector.parameters = builder.build()
-                    updateAudioTrackButtonUI()
-                    showHud("Audio: System Default")
-                }
-                .show()
-            return
-        }
-
         AlertDialog.Builder(this)
-            .setTitle("Select Audio Language / Track")
+            .setTitle("Select audio language / track")
             .setItems(entries.toTypedArray()) { _, which ->
                 val (groupIndex, trackIndex) = choices[which]
-                val builder = selector.buildUponParameters()
-                if (groupIndex < 0) {
-                    builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-                } else {
+                val builder = selector.buildUponParameters().clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+                if (groupIndex >= 0) {
                     val group = groups[groupIndex]
-                    builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-                        .setOverrideForType(TrackSelectionOverride(group, listOf(trackIndex)))
+                    builder.setOverrideForType(TrackSelectionOverride(group, listOf(trackIndex)))
                 }
                 selector.parameters = builder.build()
                 updateAudioTrackButtonUI()
-                showHud("Audio switched: ${entries[which]}")
+                showHud(if (groupIndex < 0) "Audio: System default" else "Audio selected: ${entries[which]}")
             }
             .setNegativeButton("Cancel", null)
             .show()
