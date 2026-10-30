@@ -1418,7 +1418,16 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        player?.let { getSharedPreferences("resume", MODE_PRIVATE).edit().putLong(videoUri.toString(), it.currentPosition).apply(); saveHistory(); it.pause() }
+        player?.let {
+            val resumePrefs = getSharedPreferences("resume", MODE_PRIVATE)
+            if (it.playbackState == Player.STATE_ENDED) {
+                resumePrefs.edit().remove(videoUri.toString()).apply()
+            } else {
+                resumePrefs.edit().putLong(videoUri.toString(), it.currentPosition).apply()
+                saveHistory()
+            }
+            it.pause()
+        }
         stopVoiceRecognition()
     }
     override fun onDestroy() {
