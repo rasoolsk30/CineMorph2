@@ -215,7 +215,12 @@ class PlayerActivity : AppCompatActivity() {
             }
             override fun onPlayerError(error: PlaybackException) {
                 if (error.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED) {
-                    showHud("Decoder initialization failed. This device may not support this file's codec/profile. Try another decoder-compatible file.")
+                    AlertDialog.Builder(this@PlayerActivity)
+                        .setTitle("This device could not decode the video")
+                        .setMessage("The phone's available media decoder could not initialize this file's codec/profile. Decoder fallback is enabled, but Android does not provide a compatible decoder for every format. You can try opening this same file in another installed video player.")
+                        .setPositiveButton("Open in another player") { _, _ -> openVideoInExternalPlayer() }
+                        .setNegativeButton("Close", null)
+                        .show()
                 } else {
                     showHud("Playback error: ${error.errorCodeName}")
                 }
@@ -862,8 +867,8 @@ class PlayerActivity : AppCompatActivity() {
     private fun showAudioTrackPicker() {
         val selector = trackSelector
         val mapped = selector?.currentMappedTrackInfo
-        if (selector == null || mapped == null || player?.playbackState == Player.STATE_IDLE) {
-            showHud("Audio tracks are still loading. Try again after playback starts.")
+        if (selector == null || mapped == null) {
+            showHud("Audio track information is not available yet. Wait until the video has initialized.")
             return
         }
         val groups = mapped.getTrackGroups(C.TRACK_TYPE_AUDIO)
@@ -895,17 +900,38 @@ class PlayerActivity : AppCompatActivity() {
             .setTitle("Select audio language / track")
             .setItems(entries.toTypedArray()) { _, which ->
                 val (groupIndex, trackIndex) = choices[which]
-                val builder = selector.buildUponParameters().clearOverridesOfType(C.TRACK_TYPE_AUDIO)
-                if (groupIndex >= 0) {
-                    val group = groups[groupIndex]
-                    builder.setOverrideForType(TrackSelectionOverride(group, listOf(trackIndex)))
+                try {
+                    val builder = selector.buildUponParameters().clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+                    if (groupIndex >= 0) {
+                        val group = groups[groupIndex]
+                        if (trackIndex !in 0 until group.length) {
+                            showHud("That audio track is no longer available. Reopen the track list.")
+                            return@setItems
+                        }
+                        builder.setOverrideForType(TrackSelectionOverride(group, listOf(trackIndex)))
+                    }
+                    selector.parameters = builder.build()
+                    updateAudioTrackButtonUI()
+                    showHud(if (groupIndex < 0) "Audio: System default" else "Audio selection requested: ${entries[which]}")
+                } catch (e: Exception) {
+                    showHud("Could not select audio track: ${e.localizedMessage ?: e.javaClass.simpleName}")
                 }
-                selector.parameters = builder.build()
-                updateAudioTrackButtonUI()
-                showHud(if (groupIndex < 0) "Audio: System default" else "Audio selected: ${entries[which]}")
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun openVideoInExternalPlayer() {
+        player?.pause()
+        val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(videoUri, "video/*")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(Intent.createChooser(viewIntent, "Open video with"))
+        } catch (_: android.content.ActivityNotFoundException) {
+            showHud("No compatible external video player is installed.")
+        }
     }
 
     private fun updateAudioTrackButtonUI() {
