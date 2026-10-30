@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
         val heroActions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(10), 0, 0) }
         val browse = Button(this).apply { text = "＋  Browse Files"; isAllCaps = false; textSize = 11f; setTextColor(Color.WHITE); background = rounded(0xff6853e8.toInt(), 12); setOnClickListener { pickVideo.launch(arrayOf("video/*")) } }
         heroActions.addView(browse, LinearLayout.LayoutParams(0, dp(38), 1f).apply { marginEnd = dp(8) })
-        val studio = Button(this).apply { text = "✦  AI Studio  ↗"; isAllCaps = false; textSize = 11f; setTextColor(0xffe8e5ff.toInt()); background = rounded(0xff2d2859.toInt(), 12, 0xff6252d6.toInt()); setOnClickListener { startActivity(Intent(this@MainActivity, CinemaStudioActivity::class.java)) } }
+        val studio = Button(this).apply { text = "✦  Cinema Studio  ↗"; isAllCaps = false; textSize = 11f; setTextColor(0xffe8e5ff.toInt()); background = rounded(0xff2d2859.toInt(), 12, 0xff6252d6.toInt()); setOnClickListener { startActivity(Intent(this@MainActivity, CinemaStudioActivity::class.java)) } }
         heroActions.addView(studio, LinearLayout.LayoutParams(0, dp(38), 1f))
         hero.addView(heroActions); root.addView(hero, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
 
