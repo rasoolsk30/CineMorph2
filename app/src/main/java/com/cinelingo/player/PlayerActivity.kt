@@ -251,9 +251,11 @@ class PlayerActivity : AppCompatActivity() {
         updateSubtitleToggleButtonUI()
 
         findViewById<Button>(R.id.btn_sub_toggle).setOnClickListener {
+            if (lockState != LockState.UNLOCKED) return@setOnClickListener
             toggleSubtitles()
         }
         findViewById<Button>(R.id.btn_sub).setOnClickListener {
+            if (lockState != LockState.UNLOCKED) return@setOnClickListener
             showSubtitlePickerMenu()
         }
         findViewById<Button>(R.id.btn_speed).setOnClickListener { setPlaybackSpeed((speedIdx + 1) % speeds.size) }
@@ -858,7 +860,6 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun showAudioTrackPicker() {
-        if (lockState != LockState.UNLOCKED) return
         val selector = trackSelector
         val mapped = selector?.currentMappedTrackInfo
         if (selector == null || mapped == null || player?.playbackState == Player.STATE_IDLE) {
