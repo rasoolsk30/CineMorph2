@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "cowatch_rooms": {
+      "$roomId": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.child('hostId').val() === auth.uid) || data.child('hostId').val() === auth.uid)",
+        "messages": {
+          "$messageId": {
+            ".read": "auth != null",
+            ".write": "auth != null && !data.exists() && newData.child('senderId').val() === auth.uid && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 500"
+          }
+        }
+      }
+    }
+  }
+}

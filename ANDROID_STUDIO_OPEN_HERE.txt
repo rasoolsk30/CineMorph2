@@ -1,0 +1,19 @@
+CineMorph AI — Android Studio quick note
+
+1. Extract the ZIP.
+2. In Android Studio choose Open.
+3. Select the outer folder: CineMorphAI-Android
+4. Do NOT select web-companion/.
+5. Do NOT open app/ as a standalone project.
+6. The Android module is named app/ (there is no separate android/ folder in this Gradle project).
+7. Wait for Gradle Sync. Requires JDK 17 and Android SDK Platform 34.
+8. Build and test before assuming features work.
+
+Important: the web app and native Android app are separate. Not every web feature is implemented in the Android app. See ANDROID_FEATURE_AUDIT_TELUGU.md.
+
+
+New hybrid integration button:
+9. Home screenలో “Open Full AI Studio (web features)” నొక్కండి.
+10. ముందుగా deploy చేసిన web-companion HTTPS URL ఇవ్వండి. Example format మాత్రమే: https://your-site.example
+11. URL deploy/configure చేయకపోతే AI Studio web tabs open అవవు. Gemini keyను app codeలో పెట్టవద్దు; server environment variableగా మాత్రమే ఉంచండి.
+12. WebView integration source: app/src/main/java/com/cinelingo/player/WebStudioActivity.kt.

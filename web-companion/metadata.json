@@ -1,0 +1,6 @@
+{
+  "name": "CineMorph AI - Next-Gen Cinema Player & Remaster Studio",
+  "description": "Revolutionary AI movie companion with real-time Telugu voice dubbing, dynamic context subtitles, and 4K visual remastering.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

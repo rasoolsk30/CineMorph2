@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "C:\\Users\\rasoo\\.gradle\\daemon\\8.9\\com.cinelingo.player.app-debug-37:\\layout_activity_player.xml.flat",
+        "source": "C:\\Users\\rasoo\\.gradle\\daemon\\8.9\\com.cinelingo.player.app-main-39:\\layout\\activity_player.xml"
+    },
+    {
+        "merged": "com.cinelingo.player.app-debug-37:/layout_activity_player.xml.flat",
+        "source": "com.cinelingo.player.app-main-39:/layout/activity_player.xml"
+    },
+    {
+        "merged": "C:\\Users\\rasoo\\.gradle\\daemon\\8.9\\com.cinelingo.player.app-debug-37:\\drawable_bg_unlock_pill.xml.flat",
+        "source": "C:\\Users\\rasoo\\.gradle\\daemon\\8.9\\com.cinelingo.player.app-main-39:\\drawable\\bg_unlock_pill.xml"
+    },
+    {
+        "merged": "C:\\Users\\rasoo\\.gradle\\daemon\\8.9\\com.cinelingo.player.app-debug-37:\\drawable_ic_cinemorph.xml.flat",
+        "source": "C:\\Users\\rasoo\\.gradle\\daemon\\8.9\\com.cinelingo.player.app-main-39:\\drawable\\ic_cinemorph.xml"
+    }
+]

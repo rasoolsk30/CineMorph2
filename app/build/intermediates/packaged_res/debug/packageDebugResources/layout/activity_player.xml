@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#070B14">
+
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/player_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:use_controller="true"
+        app:surface_type="texture_view"
+        app:show_buffering="when_playing" />
+
+    <TextView
+        android:id="@+id/subtitle_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="92dp"
+        android:gravity="center"
+        android:padding="8dp"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
+        android:shadowColor="#000000"
+        android:shadowRadius="6"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:visibility="gone" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:fillViewport="false"
+        android:background="#EE10182A"
+        android:scrollbars="none">
+        <LinearLayout
+            android:id="@+id/top_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp">
+            <Button android:id="@+id/btn_sub_toggle" android:layout_width="wrap_content" android:layout_height="42dp" android:minWidth="56dp" android:text="💬 CC ON" android:textColor="#FFFFFF" android:textSize="11sp" android:textStyle="bold" android:textAllCaps="false" android:backgroundTint="#6554B8"/>
+            <Button android:id="@+id/btn_sub" android:layout_width="wrap_content" android:layout_height="42dp" android:minWidth="48dp" android:text="Subtitles ⚙"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_speed" android:layout_width="wrap_content" android:layout_height="42dp" android:text="1x"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_speed_menu" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Speed ⚙" android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_next" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Next ▶" android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_previous" android:layout_width="wrap_content" android:layout_height="42dp" android:text="◀ Previous" android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_lock" android:layout_width="wrap_content" android:layout_height="42dp" android:text="🔒 Lock" android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_pip" android:layout_width="wrap_content" android:layout_height="42dp" android:text="PiP" android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_aspect" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Fit"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_voice" android:layout_width="wrap_content" android:layout_height="42dp" android:text="🎙 Voice"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_language" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Dub: Telugu"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_audio_track" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Audio track"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_sub_minus" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Sub −500ms"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_sub_plus" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Sub +500ms"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <TextView android:id="@+id/subtitle_sync_indicator" android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="8dp" android:text="Sync OK" android:textColor="#FFFFFF" android:textSize="12sp" />
+            <Button android:id="@+id/btn_sub_style" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Subtitle style"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_translate_srt" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Translate SRT" android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_scene_search" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Find scene"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_cowatch" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Co-Watch"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_theme" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Genre theme"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_ai_settings" android:layout_width="wrap_content" android:layout_height="42dp" android:text="AI server"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <TextView android:id="@+id/txt_dub_status" android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="8dp" android:text="Dub: Ready" android:textColor="#FFD166" android:textSize="12sp" />
+            <ProgressBar android:id="@+id/dub_progress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="72dp" android:layout_height="8dp" android:max="100" android:progress="0" />
+            <Button android:id="@+id/btn_dub_preview" android:layout_width="wrap_content" android:layout_height="42dp" android:text="AI Dub Preview"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_auto_dub" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Auto dub: OFF"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+            <Button android:id="@+id/btn_boost" android:layout_width="wrap_content" android:layout_height="42dp" android:text="Boost: OFF"  android:textColor="#F3F4FF" android:textSize="11sp" android:textAllCaps="false" android:backgroundTint="#302B55"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Full-screen Touch Interceptor for Locked State -->
+    <View
+        android:id="@+id/lock_touch_interceptor"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <!-- Two-Step Unlock Button Container (Revealed on First Touch While Locked) -->
+    <LinearLayout
+        android:id="@+id/unlock_button_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        android:background="@drawable/bg_unlock_pill"
+        android:visibility="gone"
+        android:alpha="0"
+        android:elevation="12dp">
+
+        <TextView
+            android:id="@+id/btn_unlock_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔓  Tap to Unlock Screen"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/hud"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="#EE202943"
+        android:padding="16dp"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:visibility="gone" />
+</FrameLayout>

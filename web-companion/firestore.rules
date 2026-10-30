@@ -1,0 +1,134 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidProgress(data, userId, movieId) {
+      return data.keys().hasAll(['userId', 'movieId', 'progressSeconds', 'lastWatchedAt']) &&
+             data.keys().hasOnly([
+               'userId', 'movieId', 'progressSeconds', 'progressPercent', 'lastWatchedAt', 
+               'dubbingMood', 'targetLang', 'volume', 'brightness', 'subtitleMode', 
+               'dubbingEnabled', 'remasterEnabled', 'pulseSyncEnabled', 'pulseSyncMode', 
+               'accessibilityOverlayEnabled', 'highContrastSubtitleMode', 'audioDescriptionEnabled', 'subtitleFontSize',
+               'activeVoicePersona', 'subtitleDriftMs'
+             ]) &&
+             data.userId == userId &&
+             data.movieId == movieId &&
+             data.progressSeconds is number &&
+             data.progressSeconds >= 0 &&
+             data.lastWatchedAt is string &&
+             data.lastWatchedAt.size() <= 64 &&
+             (!('dubbingMood' in data) || (data.dubbingMood is string && data.dubbingMood.size() <= 32)) &&
+             (!('targetLang' in data) || (data.targetLang is string && data.targetLang.size() <= 16)) &&
+             (!('volume' in data) || (data.volume is number && data.volume >= 0 && data.volume <= 1)) &&
+             (!('brightness' in data) || (data.brightness is number && data.brightness >= 20 && data.brightness <= 250)) &&
+             (!('subtitleMode' in data) || (data.subtitleMode is string && data.subtitleMode.size() <= 32)) &&
+             (!('dubbingEnabled' in data) || data.dubbingEnabled is bool) &&
+             (!('remasterEnabled' in data) || data.remasterEnabled is bool) &&
+             (!('pulseSyncEnabled' in data) || data.pulseSyncEnabled is bool) &&
+             (!('pulseSyncMode' in data) || (data.pulseSyncMode is string && data.pulseSyncMode.size() <= 32)) &&
+             (!('accessibilityOverlayEnabled' in data) || data.accessibilityOverlayEnabled is bool) &&
+             (!('highContrastSubtitleMode' in data) || (data.highContrastSubtitleMode is string && data.highContrastSubtitleMode.size() <= 32)) &&
+             (!('audioDescriptionEnabled' in data) || data.audioDescriptionEnabled is bool) &&
+             (!('subtitleFontSize' in data) || (data.subtitleFontSize is string && data.subtitleFontSize.size() <= 16)) &&
+             (!('activeVoicePersona' in data) || (data.activeVoicePersona is string && data.activeVoicePersona.size() <= 64)) &&
+             (!('subtitleDriftMs' in data) || (data.subtitleDriftMs is number && data.subtitleDriftMs >= -10000 && data.subtitleDriftMs <= 10000));
+    }
+
+    function isValidPreferences(data, userId) {
+      return data.keys().hasAll(['userId', 'defaultMood', 'defaultLang']) &&
+             data.keys().hasOnly(['userId', 'defaultMood', 'defaultLang', 'defaultBrightness', 'activeVoicePersona', 'updatedAt']) &&
+             data.userId == userId &&
+             data.defaultMood is string &&
+             data.defaultMood.size() <= 32 &&
+             data.defaultLang is string &&
+             data.defaultLang.size() <= 16 &&
+             (!('defaultBrightness' in data) || (data.defaultBrightness is number && data.defaultBrightness >= 20 && data.defaultBrightness <= 250)) &&
+             (!('activeVoicePersona' in data) || (data.activeVoicePersona is string && data.activeVoicePersona.size() <= 64)) &&
+             (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    // User Movie Watch Progress Subcollection
+    match /users/{userId}/watch_progress/{movieId} {
+      allow read: if isOwner(userId) && isValidId(userId) && isValidId(movieId);
+      allow create, update: if isOwner(userId) &&
+                               isValidId(userId) &&
+                               isValidId(movieId) &&
+                               isValidProgress(incoming(), userId, movieId);
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(movieId);
+    }
+
+    // User Global Settings & Preferences
+    match /users/{userId}/preferences/{prefId} {
+      allow read: if isOwner(userId) && isValidId(userId) && isValidId(prefId);
+      allow create, update: if isOwner(userId) &&
+                               isValidId(userId) &&
+                               isValidId(prefId) &&
+                               isValidPreferences(incoming(), userId);
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(prefId);
+    }
+
+    function isValidRoom(data) {
+      return data.keys().hasAll(['roomId', 'hostId', 'movieId', 'isPlaying', 'currentTime']) &&
+             data.roomId is string && data.roomId.size() <= 64 &&
+             data.hostId is string && data.hostId.size() <= 128 &&
+             data.movieId is string && data.movieId.size() <= 128 &&
+             data.isPlaying is bool &&
+             data.currentTime is number && data.currentTime >= 0;
+    }
+
+    function isValidMessage(data, roomId) {
+      return data.keys().hasAll(['roomId', 'senderId', 'senderName', 'text', 'timestamp']) &&
+             data.roomId == roomId &&
+             data.senderId == request.auth.uid &&
+             data.senderName is string && data.senderName.size() <= 64 &&
+             data.text is string && data.text.size() > 0 && data.text.size() <= 500 &&
+             data.timestamp is string && data.timestamp.size() <= 64;
+    }
+
+    // Co-Watch Rooms
+    match /cowatch_rooms/{roomId} {
+      allow read: if isSignedIn() && isValidId(roomId);
+      allow create: if isSignedIn() && isValidId(roomId) && isValidRoom(incoming()) && incoming().hostId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(roomId) && isValidRoom(incoming()) &&
+        (resource.data.hostId == request.auth.uid ||
+         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'activeUserCount', 'lastUpdated']) &&
+          request.resource.data.participants is list && request.resource.data.participants.size() <= 50 &&
+          request.resource.data.activeUserCount is number && request.resource.data.activeUserCount == request.resource.data.participants.size()));
+      allow delete: if isSignedIn() && isValidId(roomId) && resource.data.hostId == request.auth.uid;
+
+      // Real-time Chat Messages inside Co-Watch Room
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && isValidId(roomId) && isValidId(messageId);
+        allow create: if isSignedIn() && isValidId(roomId) && isValidId(messageId) && isValidMessage(incoming(), roomId);
+        allow update, delete: if false;
+      }
+    }
+  }
+}
+

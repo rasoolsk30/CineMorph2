@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: cinemorph-ai-web
+    runtime: docker
+    dockerfilePath: ./web-companion/Dockerfile
+    dockerContext: ./web-companion
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: VITE_FIREBASE_DATABASE_URL
+        sync: false

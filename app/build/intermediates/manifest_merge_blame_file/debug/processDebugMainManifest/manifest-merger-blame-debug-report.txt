@@ -1,0 +1,469 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.cinelingo.player"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:4:5-67
+11-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:4:22-64
+12    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+12-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:5:5-75
+12-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:5:22-72
+13    <uses-permission
+13-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:6:5-107
+14        android:name="android.permission.READ_EXTERNAL_STORAGE"
+14-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:6:22-77
+15        android:maxSdkVersion="32" />
+15-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:6:78-104
+16    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+16-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:7:5-71
+16-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:7:22-68
+17    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+17-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:8:5-80
+17-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:8:22-77
+18    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+18-->[com.google.mlkit:translate:17.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\99c508c2994ab7da8c45a653373a5f5b\transformed\translate-17.0.3\AndroidManifest.xml:7:5-79
+18-->[com.google.mlkit:translate:17.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\99c508c2994ab7da8c45a653373a5f5b\transformed\translate-17.0.3\AndroidManifest.xml:7:22-76
+19    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+19-->[com.google.android.recaptcha:recaptcha:18.5.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\548c1c6720098f29f662ceca8d9a27b6\transformed\recaptcha-18.5.1\AndroidManifest.xml:9:5-98
+19-->[com.google.android.recaptcha:recaptcha:18.5.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\548c1c6720098f29f662ceca8d9a27b6\transformed\recaptcha-18.5.1\AndroidManifest.xml:9:22-95
+20
+21    <permission
+21-->[androidx.core:core:1.13.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\8029ecae9b540ae7d2df054ef7a88ed3\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
+22        android:name="com.cinelingo.player.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+22-->[androidx.core:core:1.13.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\8029ecae9b540ae7d2df054ef7a88ed3\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
+23        android:protectionLevel="signature" />
+23-->[androidx.core:core:1.13.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\8029ecae9b540ae7d2df054ef7a88ed3\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
+24
+25    <uses-permission android:name="com.cinelingo.player.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" /> <!-- Local HTTP backend is allowed only in debug builds. Release builds require HTTPS. -->
+25-->[androidx.core:core:1.13.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\8029ecae9b540ae7d2df054ef7a88ed3\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
+25-->[androidx.core:core:1.13.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\8029ecae9b540ae7d2df054ef7a88ed3\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
+26    <application
+26-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:9:5-39:19
+27        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+27-->[androidx.core:core:1.13.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\8029ecae9b540ae7d2df054ef7a88ed3\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
+28        android:debuggable="true"
+29        android:extractNativeLibs="false"
+30        android:icon="@drawable/ic_cinemorph"
+30-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:12:38-75
+31        android:label="CineMorph AI"
+31-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:12:9-37
+32        android:supportsRtl="true"
+32-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:13:9-35
+33        android:theme="@style/Theme.CineLingo"
+33-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:14:9-47
+34        android:usesCleartextTraffic="true" >
+34-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:10:9-44
+35        <activity
+35-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:15:9-80
+36            android:name="com.cinelingo.player.WebStudioActivity"
+36-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:15:19-52
+37            android:exported="false" />
+37-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:15:53-77
+38        <activity
+38-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:16:9-21:20
+39            android:name="com.cinelingo.player.MainActivity"
+39-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:16:19-47
+40            android:exported="true" >
+40-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:16:48-71
+41            <intent-filter>
+41-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:17:13-20:29
+42                <action android:name="android.intent.action.MAIN" />
+42-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:18:17-69
+42-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:18:25-66
+43
+44                <category android:name="android.intent.category.LAUNCHER" />
+44-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:19:17-77
+44-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:19:27-74
+45            </intent-filter>
+46        </activity> <!-- Appears in "Open with" for any video file, like VLC / MX Player -->
+47        <activity
+47-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:23:9-38:20
+48            android:name="com.cinelingo.player.PlayerActivity"
+48-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:24:13-43
+49            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
+49-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:27:13-106
+50            android:exported="true"
+50-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:25:13-36
+51            android:screenOrientation="sensor"
+51-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:26:13-47
+52            android:supportsPictureInPicture="true" >
+52-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:26:48-87
+53            <intent-filter>
+53-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:28:13-37:29
+54                <action android:name="android.intent.action.VIEW" />
+54-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:29:17-69
+54-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:29:25-66
+55
+56                <category android:name="android.intent.category.DEFAULT" />
+56-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:30:17-76
+56-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:30:27-73
+57                <category android:name="android.intent.category.BROWSABLE" />
+57-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:31:17-78
+57-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:31:27-75
+58
+59                <data android:scheme="content" />
+59-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:17-50
+59-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:23-47
+60                <data android:scheme="file" />
+60-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:17-50
+60-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:23-47
+61                <data android:scheme="http" />
+61-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:17-50
+61-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:23-47
+62                <data android:scheme="https" />
+62-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:17-50
+62-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:23-47
+63                <data android:mimeType="video/*" />
+63-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:17-50
+64            </intent-filter>
+65        </activity>
+66
+67        <service
+67-->[com.google.mlkit:translate:17.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\99c508c2994ab7da8c45a653373a5f5b\transformed\translate-17.0.3\AndroidManifest.xml:11:9-17:19
+68            android:name="com.google.mlkit.common.internal.MlKitComponentDiscoveryService"
+68-->[com.google.mlkit:translate:17.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\99c508c2994ab7da8c45a653373a5f5b\transformed\translate-17.0.3\AndroidManifest.xml:12:13-91
+69            android:directBootAware="true"
+69-->[com.google.mlkit:common:18.11.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\50e50fa4ead65626759ef0306b9aa07d\transformed\common-18.11.0\AndroidManifest.xml:17:13-43
+70            android:exported="false" >
+70-->[com.google.mlkit:translate:17.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\99c508c2994ab7da8c45a653373a5f5b\transformed\translate-17.0.3\AndroidManifest.xml:13:13-37
+71            <meta-data
+71-->[com.google.mlkit:translate:17.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\99c508c2994ab7da8c45a653373a5f5b\transformed\translate-17.0.3\AndroidManifest.xml:14:13-16:85
+72                android:name="com.google.firebase.components:com.google.mlkit.nl.translate.NaturalLanguageTranslateRegistrar"
+72-->[com.google.mlkit:translate:17.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\99c508c2994ab7da8c45a653373a5f5b\transformed\translate-17.0.3\AndroidManifest.xml:15:17-126
+73                android:value="com.google.firebase.components.ComponentRegistrar" />
+73-->[com.google.mlkit:translate:17.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\99c508c2994ab7da8c45a653373a5f5b\transformed\translate-17.0.3\AndroidManifest.xml:16:17-82
+74            <meta-data
+74-->[com.google.mlkit:language-id:17.0.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7e691733b319c395e0e301055398eb7f\transformed\language-id-17.0.6\AndroidManifest.xml:11:13-13:85
+75                android:name="com.google.firebase.components:com.google.mlkit.nl.languageid.bundled.internal.ThickLanguageIdRegistrar"
+75-->[com.google.mlkit:language-id:17.0.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7e691733b319c395e0e301055398eb7f\transformed\language-id-17.0.6\AndroidManifest.xml:12:17-135
+76                android:value="com.google.firebase.components.ComponentRegistrar" />
+76-->[com.google.mlkit:language-id:17.0.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7e691733b319c395e0e301055398eb7f\transformed\language-id-17.0.6\AndroidManifest.xml:13:17-82
+77            <meta-data
+77-->[com.google.mlkit:language-id-common:16.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\de8a358e798a19b037b3197f321e7336\transformed\language-id-common-16.1.0\AndroidManifest.xml:26:13-28:85
+78                android:name="com.google.firebase.components:com.google.mlkit.nl.languageid.internal.LanguageIdRegistrar"
+78-->[com.google.mlkit:language-id-common:16.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\de8a358e798a19b037b3197f321e7336\transformed\language-id-common-16.1.0\AndroidManifest.xml:27:17-122
+79                android:value="com.google.firebase.components.ComponentRegistrar" />
+79-->[com.google.mlkit:language-id-common:16.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\de8a358e798a19b037b3197f321e7336\transformed\language-id-common-16.1.0\AndroidManifest.xml:28:17-82
+80            <meta-data
+80-->[com.google.mlkit:common:18.11.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\50e50fa4ead65626759ef0306b9aa07d\transformed\common-18.11.0\AndroidManifest.xml:20:13-22:85
+81                android:name="com.google.firebase.components:com.google.mlkit.common.internal.CommonComponentRegistrar"
+81-->[com.google.mlkit:common:18.11.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\50e50fa4ead65626759ef0306b9aa07d\transformed\common-18.11.0\AndroidManifest.xml:21:17-120
+82                android:value="com.google.firebase.components.ComponentRegistrar" />
+82-->[com.google.mlkit:common:18.11.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\50e50fa4ead65626759ef0306b9aa07d\transformed\common-18.11.0\AndroidManifest.xml:22:17-82
+83        </service>
+84
+85        <provider
+85-->[com.google.mlkit:common:18.11.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\50e50fa4ead65626759ef0306b9aa07d\transformed\common-18.11.0\AndroidManifest.xml:9:9-13:38
+86            android:name="com.google.mlkit.common.internal.MlKitInitProvider"
+86-->[com.google.mlkit:common:18.11.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\50e50fa4ead65626759ef0306b9aa07d\transformed\common-18.11.0\AndroidManifest.xml:10:13-78
+87            android:authorities="com.cinelingo.player.mlkitinitprovider"
+87-->[com.google.mlkit:common:18.11.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\50e50fa4ead65626759ef0306b9aa07d\transformed\common-18.11.0\AndroidManifest.xml:11:13-69
+88            android:exported="false"
+88-->[com.google.mlkit:common:18.11.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\50e50fa4ead65626759ef0306b9aa07d\transformed\common-18.11.0\AndroidManifest.xml:12:13-37
+89            android:initOrder="99" />
+89-->[com.google.mlkit:common:18.11.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\50e50fa4ead65626759ef0306b9aa07d\transformed\common-18.11.0\AndroidManifest.xml:13:13-35
+90
+91        <activity
+91-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:29:9-46:20
+92            android:name="com.google.firebase.auth.internal.GenericIdpActivity"
+92-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:30:13-80
+93            android:excludeFromRecents="true"
+93-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:31:13-46
+94            android:exported="true"
+94-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:32:13-36
+95            android:launchMode="singleTask"
+95-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:33:13-44
+96            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+96-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:34:13-72
+97            <intent-filter>
+97-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:35:13-45:29
+98                <action android:name="android.intent.action.VIEW" />
+98-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:29:17-69
+98-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:29:25-66
+99
+100                <category android:name="android.intent.category.DEFAULT" />
+100-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:30:17-76
+100-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:30:27-73
+101                <category android:name="android.intent.category.BROWSABLE" />
+101-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:31:17-78
+101-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:31:27-75
+102
+103                <data
+103-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:17-50
+104                    android:host="firebase.auth"
+105                    android:path="/"
+106                    android:scheme="genericidp" />
+106-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:23-47
+107            </intent-filter>
+108        </activity>
+109        <activity
+109-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:47:9-64:20
+110            android:name="com.google.firebase.auth.internal.RecaptchaActivity"
+110-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:48:13-79
+111            android:excludeFromRecents="true"
+111-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:49:13-46
+112            android:exported="true"
+112-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:50:13-36
+113            android:launchMode="singleTask"
+113-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:51:13-44
+114            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+114-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:52:13-72
+115            <intent-filter>
+115-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:53:13-63:29
+116                <action android:name="android.intent.action.VIEW" />
+116-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:29:17-69
+116-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:29:25-66
+117
+118                <category android:name="android.intent.category.DEFAULT" />
+118-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:30:17-76
+118-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:30:27-73
+119                <category android:name="android.intent.category.BROWSABLE" />
+119-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:31:17-78
+119-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:31:27-75
+120
+121                <data
+121-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:17-50
+122                    android:host="firebase.auth"
+123                    android:path="/"
+124                    android:scheme="recaptcha" />
+124-->C:\Users\rasoo\Pictures\dayupgradeproject\CineMorphAI-Android\app\src\main\AndroidManifest.xml:32:23-47
+125            </intent-filter>
+126        </activity>
+127
+128        <service
+128-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:66:9-72:19
+129            android:name="com.google.firebase.components.ComponentDiscoveryService"
+129-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:67:13-84
+130            android:directBootAware="true"
+130-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:32:13-43
+131            android:exported="false" >
+131-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:68:13-37
+132            <meta-data
+132-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:69:13-71:85
+133                android:name="com.google.firebase.components:com.google.firebase.auth.FirebaseAuthRegistrar"
+133-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:70:17-109
+134                android:value="com.google.firebase.components.ComponentRegistrar" />
+134-->[com.google.firebase:firebase-auth:23.1.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\56355ecc064871cc6b26498c3e043073\transformed\firebase-auth-23.1.0\AndroidManifest.xml:71:17-82
+135            <meta-data
+135-->[com.google.firebase:firebase-firestore:25.1.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\2a86b7d67b226199ef96b93c8a5c758d\transformed\firebase-firestore-25.1.1\AndroidManifest.xml:17:13-19:85
+136                android:name="com.google.firebase.components:com.google.firebase.firestore.FirebaseFirestoreKtxRegistrar"
+136-->[com.google.firebase:firebase-firestore:25.1.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\2a86b7d67b226199ef96b93c8a5c758d\transformed\firebase-firestore-25.1.1\AndroidManifest.xml:18:17-122
+137                android:value="com.google.firebase.components.ComponentRegistrar" />
+137-->[com.google.firebase:firebase-firestore:25.1.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\2a86b7d67b226199ef96b93c8a5c758d\transformed\firebase-firestore-25.1.1\AndroidManifest.xml:19:17-82
+138            <meta-data
+138-->[com.google.firebase:firebase-firestore:25.1.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\2a86b7d67b226199ef96b93c8a5c758d\transformed\firebase-firestore-25.1.1\AndroidManifest.xml:20:13-22:85
+139                android:name="com.google.firebase.components:com.google.firebase.firestore.FirestoreRegistrar"
+139-->[com.google.firebase:firebase-firestore:25.1.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\2a86b7d67b226199ef96b93c8a5c758d\transformed\firebase-firestore-25.1.1\AndroidManifest.xml:21:17-111
+140                android:value="com.google.firebase.components.ComponentRegistrar" />
+140-->[com.google.firebase:firebase-firestore:25.1.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\2a86b7d67b226199ef96b93c8a5c758d\transformed\firebase-firestore-25.1.1\AndroidManifest.xml:22:17-82
+141            <meta-data
+141-->[com.google.firebase:firebase-common-ktx:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\31bf4a2a06f7b7232cc90eb3b56c4fb7\transformed\firebase-common-ktx-21.0.0\AndroidManifest.xml:12:13-14:85
+142                android:name="com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonLegacyRegistrar"
+142-->[com.google.firebase:firebase-common-ktx:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\31bf4a2a06f7b7232cc90eb3b56c4fb7\transformed\firebase-common-ktx-21.0.0\AndroidManifest.xml:13:17-116
+143                android:value="com.google.firebase.components.ComponentRegistrar" />
+143-->[com.google.firebase:firebase-common-ktx:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\31bf4a2a06f7b7232cc90eb3b56c4fb7\transformed\firebase-common-ktx-21.0.0\AndroidManifest.xml:14:17-82
+144            <meta-data
+144-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:35:13-37:85
+145                android:name="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar"
+145-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:36:17-109
+146                android:value="com.google.firebase.components.ComponentRegistrar" />
+146-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:37:17-82
+147        </service>
+148        <service
+148-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:24:9-32:19
+149            android:name="androidx.credentials.playservices.CredentialProviderMetadataHolder"
+149-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:25:13-94
+150            android:enabled="true"
+150-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:26:13-35
+151            android:exported="false" >
+151-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:27:13-37
+152            <meta-data
+152-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:29:13-31:104
+153                android:name="androidx.credentials.CREDENTIAL_PROVIDER_KEY"
+153-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:30:17-76
+154                android:value="androidx.credentials.playservices.CredentialProviderPlayServicesImpl" />
+154-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:31:17-101
+155        </service>
+156
+157        <activity
+157-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:34:9-41:20
+158            android:name="androidx.credentials.playservices.HiddenActivity"
+158-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:35:13-76
+159            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+159-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:36:13-87
+160            android:enabled="true"
+160-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:37:13-35
+161            android:exported="false"
+161-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:38:13-37
+162            android:fitsSystemWindows="true"
+162-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:39:13-45
+163            android:theme="@style/Theme.Hidden" >
+163-->[androidx.credentials:credentials-play-services-auth:1.2.0-rc01] C:\Users\rasoo\.gradle\caches\8.9\transforms\335183103f4c7e8ccbf7e646d6fce461\transformed\credentials-play-services-auth-1.2.0-rc01\AndroidManifest.xml:40:13-48
+164        </activity>
+165        <activity
+165-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:23:9-27:75
+166            android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity"
+166-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:24:13-93
+167            android:excludeFromRecents="true"
+167-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:25:13-46
+168            android:exported="false"
+168-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:26:13-37
+169            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+169-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:27:13-72
+170        <!--
+171            Service handling Google Sign-In user revocation. For apps that do not integrate with
+172            Google Sign-In, this service will never be started.
+173        -->
+174        <service
+174-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:33:9-37:51
+175            android:name="com.google.android.gms.auth.api.signin.RevocationBoundService"
+175-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:34:13-89
+176            android:exported="true"
+176-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:35:13-36
+177            android:permission="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION"
+177-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:36:13-107
+178            android:visibleToInstantApps="true" />
+178-->[com.google.android.gms:play-services-auth:20.7.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\248b122aa3cdaef1543fa2592f30e408\transformed\play-services-auth-20.7.0\AndroidManifest.xml:37:13-48
+179
+180        <activity
+180-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\1d2f4d5fcc049a55bf3a44a0ce6463bf\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:9-173
+181            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+181-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\1d2f4d5fcc049a55bf3a44a0ce6463bf\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:19-85
+182            android:exported="false"
+182-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\1d2f4d5fcc049a55bf3a44a0ce6463bf\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:146-170
+183            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+183-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\1d2f4d5fcc049a55bf3a44a0ce6463bf\transformed\play-services-base-18.5.0\AndroidManifest.xml:5:86-145
+184
+185        <provider
+185-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:23:9-28:39
+186            android:name="com.google.firebase.provider.FirebaseInitProvider"
+186-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:24:13-77
+187            android:authorities="com.cinelingo.player.firebaseinitprovider"
+187-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:25:13-72
+188            android:directBootAware="true"
+188-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:26:13-43
+189            android:exported="false"
+189-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:27:13-37
+190            android:initOrder="100" />
+190-->[com.google.firebase:firebase-common:21.0.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\cadc453a44c9b8d4e99eea02244478ce\transformed\firebase-common-21.0.0\AndroidManifest.xml:28:13-36
+191        <provider
+191-->[androidx.emoji2:emoji2:1.3.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\59c967ddf30153ca09fe96cfe4de9868\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
+192            android:name="androidx.startup.InitializationProvider"
+192-->[androidx.emoji2:emoji2:1.3.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\59c967ddf30153ca09fe96cfe4de9868\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
+193            android:authorities="com.cinelingo.player.androidx-startup"
+193-->[androidx.emoji2:emoji2:1.3.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\59c967ddf30153ca09fe96cfe4de9868\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
+194            android:exported="false" >
+194-->[androidx.emoji2:emoji2:1.3.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\59c967ddf30153ca09fe96cfe4de9868\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+195            <meta-data
+195-->[androidx.emoji2:emoji2:1.3.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\59c967ddf30153ca09fe96cfe4de9868\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+196                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+196-->[androidx.emoji2:emoji2:1.3.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\59c967ddf30153ca09fe96cfe4de9868\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+197                android:value="androidx.startup" />
+197-->[androidx.emoji2:emoji2:1.3.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\59c967ddf30153ca09fe96cfe4de9868\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+198            <meta-data
+198-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\rasoo\.gradle\caches\8.9\transforms\c935839b218baedbfad3a2ddfa16fba2\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:29:13-31:52
+199                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+199-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\rasoo\.gradle\caches\8.9\transforms\c935839b218baedbfad3a2ddfa16fba2\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:30:17-78
+200                android:value="androidx.startup" />
+200-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\rasoo\.gradle\caches\8.9\transforms\c935839b218baedbfad3a2ddfa16fba2\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:31:17-49
+201            <meta-data
+201-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+202                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+202-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+203                android:value="androidx.startup" />
+203-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+204        </provider>
+205
+206        <meta-data
+206-->[com.google.android.gms:play-services-basement:18.4.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\093479afcad075a0602745dce7409809\transformed\play-services-basement-18.4.0\AndroidManifest.xml:6:9-122
+207            android:name="com.google.android.gms.version"
+207-->[com.google.android.gms:play-services-basement:18.4.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\093479afcad075a0602745dce7409809\transformed\play-services-basement-18.4.0\AndroidManifest.xml:6:20-65
+208            android:value="@integer/google_play_services_version" />
+208-->[com.google.android.gms:play-services-basement:18.4.0] C:\Users\rasoo\.gradle\caches\8.9\transforms\093479afcad075a0602745dce7409809\transformed\play-services-basement-18.4.0\AndroidManifest.xml:6:66-119
+209
+210        <receiver
+210-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+211            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+211-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+212            android:directBootAware="false"
+212-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+213            android:enabled="true"
+213-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+214            android:exported="true"
+214-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+215            android:permission="android.permission.DUMP" >
+215-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+216            <intent-filter>
+216-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+217                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+217-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+217-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+218            </intent-filter>
+219            <intent-filter>
+219-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+220                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+220-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+220-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+221            </intent-filter>
+222            <intent-filter>
+222-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+223                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+223-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+223-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+224            </intent-filter>
+225            <intent-filter>
+225-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+226                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+226-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+226-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\rasoo\.gradle\caches\8.9\transforms\f7cd68998475aa172dfa058bb9e47405\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+227            </intent-filter>
+228        </receiver>
+229
+230        <service
+230-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\78a9a220a90261cb28731dad75106529\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:29:9-35:19
+231            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+231-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\78a9a220a90261cb28731dad75106529\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:30:13-103
+232            android:exported="false" >
+232-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\78a9a220a90261cb28731dad75106529\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:31:13-37
+233            <meta-data
+233-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\78a9a220a90261cb28731dad75106529\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:32:13-34:39
+234                android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+234-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\78a9a220a90261cb28731dad75106529\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:33:17-94
+235                android:value="cct" />
+235-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\78a9a220a90261cb28731dad75106529\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:34:17-36
+236        </service>
+237        <service
+237-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7a3fb9cecaea561c01989aac1fc9b437\transformed\transport-runtime-2.2.6\AndroidManifest.xml:26:9-30:19
+238            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+238-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7a3fb9cecaea561c01989aac1fc9b437\transformed\transport-runtime-2.2.6\AndroidManifest.xml:27:13-117
+239            android:exported="false"
+239-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7a3fb9cecaea561c01989aac1fc9b437\transformed\transport-runtime-2.2.6\AndroidManifest.xml:28:13-37
+240            android:permission="android.permission.BIND_JOB_SERVICE" >
+240-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7a3fb9cecaea561c01989aac1fc9b437\transformed\transport-runtime-2.2.6\AndroidManifest.xml:29:13-69
+241        </service>
+242
+243        <receiver
+243-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7a3fb9cecaea561c01989aac1fc9b437\transformed\transport-runtime-2.2.6\AndroidManifest.xml:32:9-34:40
+244            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+244-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7a3fb9cecaea561c01989aac1fc9b437\transformed\transport-runtime-2.2.6\AndroidManifest.xml:33:13-132
+245            android:exported="false" /> <!-- The activities will be merged into the manifest of the hosting app. -->
+245-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\rasoo\.gradle\caches\8.9\transforms\7a3fb9cecaea561c01989aac1fc9b437\transformed\transport-runtime-2.2.6\AndroidManifest.xml:34:13-37
+246        <activity
+246-->[com.google.android.play:core-common:2.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\75dcd1ca16eb91591349431727680531\transformed\core-common-2.0.3\AndroidManifest.xml:14:9-18:65
+247            android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
+247-->[com.google.android.play:core-common:2.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\75dcd1ca16eb91591349431727680531\transformed\core-common-2.0.3\AndroidManifest.xml:15:13-93
+248            android:exported="false"
+248-->[com.google.android.play:core-common:2.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\75dcd1ca16eb91591349431727680531\transformed\core-common-2.0.3\AndroidManifest.xml:16:13-37
+249            android:stateNotNeeded="true"
+249-->[com.google.android.play:core-common:2.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\75dcd1ca16eb91591349431727680531\transformed\core-common-2.0.3\AndroidManifest.xml:17:13-42
+250            android:theme="@style/Theme.PlayCore.Transparent" />
+250-->[com.google.android.play:core-common:2.0.3] C:\Users\rasoo\.gradle\caches\8.9\transforms\75dcd1ca16eb91591349431727680531\transformed\core-common-2.0.3\AndroidManifest.xml:18:13-62
+251    </application>
+252
+253</manifest>

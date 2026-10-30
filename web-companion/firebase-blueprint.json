@@ -1,0 +1,174 @@
+{
+  "entities": {
+    "UserWatchProgress": {
+      "title": "UserWatchProgress",
+      "description": "Stores user video playback position, timestamp, and active settings for each movie.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The authenticated user UID"
+        },
+        "movieId": {
+          "type": "string",
+          "description": "Identifier of the movie clip"
+        },
+        "progressSeconds": {
+          "type": "number",
+          "description": "Last playback position in seconds"
+        },
+        "progressPercent": {
+          "type": "number",
+          "description": "Percentage of movie completed"
+        },
+        "lastWatchedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last activity"
+        },
+        "dubbingMood": {
+          "type": "string",
+          "description": "Selected dubbing personality (dramatic, comedic, documentary, action, noir)"
+        },
+        "targetLang": {
+          "type": "string",
+          "description": "Target language code (te, ta, hi, kn, ml, en, es, ko, ja)"
+        },
+        "volume": {
+          "type": "number",
+          "description": "Audio volume level (0 to 1)"
+        },
+        "brightness": {
+          "type": "number",
+          "description": "Brightness percentage (30 to 200)"
+        },
+        "subtitleMode": {
+          "type": "string",
+          "description": "Subtitle mode (smart-glance, standard, off)"
+        },
+        "dubbingEnabled": {
+          "type": "boolean",
+          "description": "Whether voice dubbing is enabled"
+        },
+        "remasterEnabled": {
+          "type": "boolean",
+          "description": "Whether 4K neural remastering is enabled"
+        },
+        "pulseSyncEnabled": {
+          "type": "boolean",
+          "description": "Whether Pulse Sync adaptive pacing is enabled"
+        },
+        "pulseSyncMode": {
+          "type": "string",
+          "description": "Pulse Sync focus mode (auto, deep_focus, ambient, late_night)"
+        },
+        "accessibilityOverlayEnabled": {
+          "type": "boolean",
+          "description": "Whether Accessibility Overlay is enabled"
+        },
+        "highContrastSubtitleMode": {
+          "type": "string",
+          "description": "High-contrast subtitle style (standard, high_contrast_yellow, high_contrast_cyan, large_dyslexic)"
+        },
+        "audioDescriptionEnabled": {
+          "type": "boolean",
+          "description": "Whether visual action audio descriptions are active"
+        },
+        "subtitleFontSize": {
+          "type": "string",
+          "description": "Subtitle font size (normal, large, xlarge)"
+        },
+        "activeVoicePersona": {
+          "type": "string",
+          "description": "Active celebrity or custom voice persona identifier"
+        },
+        "subtitleDriftMs": {
+          "type": "number",
+          "description": "Calibrated subtitle audio-video drift offset in milliseconds"
+        }
+      },
+      "required": ["userId", "movieId", "progressSeconds", "lastWatchedAt"]
+    },
+    "UserPreferences": {
+      "title": "UserPreferences",
+      "description": "Global audio and subtitle user settings",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The authenticated user UID"
+        },
+        "defaultMood": {
+          "type": "string",
+          "description": "Default dubbing mood"
+        },
+        "defaultLang": {
+          "type": "string",
+          "description": "Default language code"
+        },
+        "defaultBrightness": {
+          "type": "number",
+          "description": "Default screen brightness"
+        },
+        "activeVoicePersona": {
+          "type": "string",
+          "description": "Global preferred voice persona"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": ["userId", "defaultMood", "defaultLang"]
+    },
+    "CoWatchRoom": {
+      "title": "CoWatchRoom",
+      "description": "Real-time synchronized cinema watch party room",
+      "type": "object",
+      "properties": {
+        "roomId": { "type": "string" },
+        "hostId": { "type": "string" },
+        "hostName": { "type": "string" },
+        "movieId": { "type": "string" },
+        "movieTitle": { "type": "string" },
+        "isPlaying": { "type": "boolean" },
+        "currentTime": { "type": "number" },
+        "lastUpdated": { "type": "number" },
+        "targetLang": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["roomId", "hostId", "movieId", "isPlaying", "currentTime"]
+    },
+    "CoWatchMessage": {
+      "title": "CoWatchMessage",
+      "description": "Live chat message within a co-watch party room",
+      "type": "object",
+      "properties": {
+        "roomId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "color": { "type": "string" }
+      },
+      "required": ["roomId", "senderId", "senderName", "text", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/watch_progress/{movieId}": {
+      "schema": "UserWatchProgress",
+      "description": "Per-movie playback state and settings for a user"
+    },
+    "/users/{userId}/preferences/settings": {
+      "schema": "UserPreferences",
+      "description": "Global user audio, subtitle and player preferences"
+    },
+    "/cowatch_rooms/{roomId}": {
+      "schema": "CoWatchRoom",
+      "description": "Live Co-Watch session document synced across participants"
+    },
+    "/cowatch_rooms/{roomId}/messages/{messageId}": {
+      "schema": "CoWatchMessage",
+      "description": "Real-time messages sent within the co-watch room"
+    }
+  }
+}
