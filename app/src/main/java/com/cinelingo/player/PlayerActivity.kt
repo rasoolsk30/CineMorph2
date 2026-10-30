@@ -277,10 +277,24 @@ class PlayerActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.btn_language).setOnClickListener { showLanguagePicker() }
         findViewById<Button>(R.id.btn_audio_track).setOnClickListener { showAudioTrackPicker() }
-        findViewById<Button>(R.id.btn_sub_minus).setOnClickListener { subtitleOffsetMs = (subtitleOffsetMs - 500).coerceAtLeast(-10000); saveSubtitlePrefs(); updateSubtitleSyncIndicator(); showHud("Subtitle offset ${subtitleOffsetMs}ms"); updateSubtitle() }
-        findViewById<Button>(R.id.btn_sub_plus).setOnClickListener { subtitleOffsetMs = (subtitleOffsetMs + 500).coerceAtMost(10000); saveSubtitlePrefs(); updateSubtitleSyncIndicator(); showHud("Subtitle offset +${subtitleOffsetMs}ms"); updateSubtitle() }
-        findViewById<Button>(R.id.btn_sub_style).setOnClickListener { showSubtitleStylePicker() }
-        findViewById<Button>(R.id.btn_translate_srt).setOnClickListener { translateLoadedSubtitle() }
+        findViewById<Button>(R.id.btn_sub_minus).setOnClickListener {
+            if (lockState != LockState.UNLOCKED) return@setOnClickListener
+            subtitleOffsetMs = (subtitleOffsetMs - 500).coerceAtLeast(-10000)
+            saveSubtitlePrefs(); updateSubtitleSyncIndicator(); showHud("Subtitle offset ${subtitleOffsetMs}ms"); updateSubtitle()
+        }
+        findViewById<Button>(R.id.btn_sub_plus).setOnClickListener {
+            if (lockState != LockState.UNLOCKED) return@setOnClickListener
+            subtitleOffsetMs = (subtitleOffsetMs + 500).coerceAtMost(10000)
+            saveSubtitlePrefs(); updateSubtitleSyncIndicator(); showHud("Subtitle offset +${subtitleOffsetMs}ms"); updateSubtitle()
+        }
+        findViewById<Button>(R.id.btn_sub_style).setOnClickListener {
+            if (lockState != LockState.UNLOCKED) return@setOnClickListener
+            showSubtitleStylePicker()
+        }
+        findViewById<Button>(R.id.btn_translate_srt).setOnClickListener {
+            if (lockState != LockState.UNLOCKED) return@setOnClickListener
+            translateLoadedSubtitle()
+        }
         findViewById<Button>(R.id.btn_scene_search).setOnClickListener { showSceneSearch() }
         findViewById<Button>(R.id.btn_cowatch).setOnClickListener { showCoWatchDialog() }
         findViewById<Button>(R.id.btn_dub_preview).setOnClickListener { showDubPreview() }
