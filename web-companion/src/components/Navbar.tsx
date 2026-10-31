@@ -37,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Zone 2: 4 Single-line Navigation Links */}
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
           <button
-            onClick={() => setActiveTab('player')}
+            onClick={onLaunchCinema}
             className={`whitespace-nowrap shrink-0 transition-colors py-1 relative ${
               activeTab === 'player'
                 ? 'text-amber-400 font-semibold'
