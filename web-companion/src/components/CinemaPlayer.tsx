@@ -1064,7 +1064,7 @@ export const CinemaPlayer: React.FC = () => {
   const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === dubbing.targetLang) || SUPPORTED_LANGUAGES[0];
 
   return (
-    <div className="w-full">
+    <div id="cinemorph-player" className="w-full scroll-mt-20">
       {/* Top Status & Sync Banner */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900/80 rounded-2xl border border-slate-800">
         <div className="flex items-center gap-2 overflow-x-auto">
