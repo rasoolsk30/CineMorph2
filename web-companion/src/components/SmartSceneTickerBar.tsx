@@ -63,11 +63,11 @@ export const SmartSceneTickerBar: React.FC<SmartSceneTickerBarProps> = ({
 
   useEffect(() => {
     // Fetch only once per movie to avoid exceeding Gemini Free Tier 5 RPM quota
-    if (movieTitle && lastFetchedTitleRef.current !== movieTitle) {
+    if (isVisible && movieTitle && lastFetchedTitleRef.current !== movieTitle) {
       lastFetchedTitleRef.current = movieTitle;
       fetchTicker();
     }
-  }, [movieTitle]);
+  }, [movieTitle, isVisible]);
 
   if (!isVisible) return null;
 
