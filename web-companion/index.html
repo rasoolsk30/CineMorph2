@@ -13,10 +13,43 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="/runtime-config.js"></script>
-</head>
+    <style>
+      #startup-diagnostic { display:none; position:fixed; inset:0; z-index:2147483647; overflow:auto; padding:24px; background:#08090d; color:#f8fafc; font:14px/1.5 system-ui,sans-serif; }
+      #startup-diagnostic h1 { color:#f87171; font-size:22px; }
+      #startup-diagnostic pre { white-space:pre-wrap; overflow-wrap:anywhere; color:#fbbf24; background:#000; padding:14px; border-radius:8px; }
+    </style>
+  </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <section id="startup-diagnostic">
+      <h1>CineMorph startup error</h1>
+      <p>The website opened, but its app code did not start correctly. Send this error text.</p>
+      <pre id="startup-diagnostic-message"></pre>
+      <button onclick="location.reload()" style="padding:10px 16px">Reload</button>
+    </section>
+    <script>
+      (function () {
+        var shown = false;
+        function report(message) {
+          if (shown) return;
+          shown = true;
+          var panel = document.getElementById('startup-diagnostic');
+          var output = document.getElementById('startup-diagnostic-message');
+          if (output) output.textContent = String(message || 'Unknown startup error');
+          if (panel) panel.style.display = 'block';
+        }
+        window.addEventListener('error', function (event) {
+          report(event.message || (event.target && (event.target.src || event.target.href)) || 'Resource or JavaScript loading error');
+        }, true);
+        window.addEventListener('unhandledrejection', function (event) {
+          report('Unhandled promise rejection: ' + (event.reason && (event.reason.stack || event.reason.message) || event.reason));
+        });
+        window.setTimeout(function () {
+          var root = document.getElementById('root');
+          if (root && !root.hasChildNodes()) report('Startup timeout: React did not render anything within 8 seconds. Check whether the JavaScript bundle loaded.');
+        }, 8000);
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx" onerror="document.getElementById('startup-diagnostic').style.display='block';document.getElementById('startup-diagnostic-message').textContent='The main JavaScript module failed to load. Check the deployed JS bundle and browser network errors.'"></script>
   </body>
 </html>
-
