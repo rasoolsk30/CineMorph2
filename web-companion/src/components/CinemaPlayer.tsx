@@ -158,6 +158,12 @@ export const CinemaPlayer: React.FC = () => {
   const [bookmarks, setBookmarks] = useState<Array<{ movieId: string; time: number; note: string }>>(() => {
     try { return JSON.parse(localStorage.getItem('cinemorph_bookmarks') || '[]'); } catch { return []; }
   });
+  const [studioMode, setStudioMode] = useState(false);
+  const [studioStart, setStudioStart] = useState(0);
+  const [studioEnd, setStudioEnd] = useState(10);
+  const [studioExportStatus, setStudioExportStatus] = useState('');
+  const studioRecorderRef = useRef<MediaRecorder | null>(null);
+  const studioChunksRef = useRef<Blob[]>([]);
 
   // Quick-Access Language Menu Overlay state
   const [isQuickLangMenuOpen, setIsQuickLangMenuOpen] = useState(false);
@@ -684,6 +690,49 @@ export const CinemaPlayer: React.FC = () => {
     }
   };
 
+  // Export selected clip or audio segment using the browser's MediaRecorder (WebM formats).
+  const startStudioExport = (mode: 'clip' | 'audio') => {
+    const video = videoRef.current as (HTMLVideoElement & { captureStream?: () => MediaStream }) | null;
+    if (!video || !video.captureStream || typeof MediaRecorder === 'undefined') {
+      setStudioExportStatus('ఈ browserలో MediaRecorder export support లేదు.');
+      return;
+    }
+    if (studioEnd <= studioStart || studioEnd - studioStart > 60) {
+      setStudioExportStatus('Start/End సమయం సరిచూడండి. ఒక్క export గరిష్ఠంగా 60 seconds.');
+      return;
+    }
+    try {
+      const sourceStream = video.captureStream();
+      const stream = mode === 'audio' ? new MediaStream(sourceStream.getAudioTracks()) : sourceStream;
+      if (!stream.getTracks().length) throw new Error('No capturable media tracks');
+      const mimeType = mode === 'audio' ? 'audio/webm;codecs=opus' : 'video/webm;codecs=vp9';
+      const recorder = new MediaRecorder(stream, MediaRecorder.isTypeSupported(mimeType) ? { mimeType } : undefined);
+      studioChunksRef.current = [];
+      recorder.ondataavailable = event => { if (event.data.size) studioChunksRef.current.push(event.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(studioChunksRef.current, { type: recorder.mimeType || (mode === 'audio' ? 'audio/webm' : 'video/webm') });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = mode === 'audio' ? 'cinemorph-audio.webm' : 'cinemorph-clip.webm';
+        anchor.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        setStudioExportStatus('Export పూర్తయింది. WebM ఫైల్ సేవ్ అయింది.');
+        stream.getTracks().forEach(track => track.stop());
+        setStudioMode(false);
+      };
+      studioRecorderRef.current = recorder;
+      video.currentTime = studioStart;
+      setStudioExportStatus(mode === 'audio' ? 'Audio extract అవుతోంది…' : 'Clip record అవుతోంది…');
+      recorder.start(250);
+      video.play().then(() => setIsPlaying(true)).catch(error => {
+        recorder.stop(); setStudioExportStatus('Playback ప్రారంభం కాలేదు: ' + String(error));
+      });
+    } catch (error) {
+      setStudioExportStatus('Export ప్రారంభం కాలేదు: ' + String(error));
+    }
+  };
+
   // Handle Video Time Updates & Audio Sync
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
@@ -694,6 +743,13 @@ export const CinemaPlayer: React.FC = () => {
       return;
     }
     setCurrentTime(time);
+    if (studioRecorderRef.current?.state === 'recording' && time >= studioEnd) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+      studioRecorderRef.current.stop();
+      studioRecorderRef.current = null;
+      return;
+    }
 
     // Track active dialogue line from the calibrated dialogues list
     const matched = movieDialogues.find(
@@ -2241,6 +2297,9 @@ export const CinemaPlayer: React.FC = () => {
               {loopStart !== null && loopEnd !== null && <span className="text-emerald-300">A–B loop: {loopStart.toFixed(1)}s–{loopEnd.toFixed(1)}s</span>}
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <button onClick={() => { setStudioStart(currentTime); setStudioEnd(Math.min(duration || currentTime + 10, currentTime + 10)); setStudioExportStatus(''); setStudioMode(true); }} className="px-2.5 py-1.5 rounded-lg bg-indigo-900/80 text-indigo-100 text-xs flex items-center gap-1.5 hover:bg-indigo-800">
+                <Film className="w-3.5 h-3.5" /> Studio / Editor
+              </button>
               <button onClick={async () => {
                 const el = videoContainerRef.current;
                 if (!el) return;
@@ -2297,6 +2356,18 @@ export const CinemaPlayer: React.FC = () => {
                 <Download className="w-3.5 h-3.5" /> Cache for Offline
               </button>
             </div>
+            {studioMode && (
+              <div className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setStudioMode(false)}>
+                <div className="w-full max-w-lg rounded-2xl border border-indigo-500/40 bg-slate-950 p-5 shadow-2xl space-y-4" onClick={event => event.stopPropagation()}>
+                  <div className="flex items-center justify-between"><h3 className="text-white font-bold">Studio / Editor View</h3><button onClick={() => setStudioMode(false)} className="text-slate-400 hover:text-white">✕</button></div>
+                  <p className="text-xs text-slate-400">కావలసిన భాగం Start / End ఎంచుకోండి. Browser WebM export మాత్రమే; MP3/WAV/GIF ఇంకా లేదు.</p>
+                  <label className="block text-xs text-slate-300">Start: {studioStart.toFixed(1)}s<input type="range" min="0" max={Math.max(1,duration)} step="0.1" value={studioStart} onChange={event => setStudioStart(Math.min(Number(event.target.value), studioEnd - 0.1))} className="w-full accent-indigo-400" /></label>
+                  <label className="block text-xs text-slate-300">End: {studioEnd.toFixed(1)}s<input type="range" min="0" max={Math.max(1,duration)} step="0.1" value={studioEnd} onChange={event => setStudioEnd(Math.max(Number(event.target.value), studioStart + 0.1))} className="w-full accent-indigo-400" /></label>
+                  <div className="flex gap-2"><button onClick={() => startStudioExport('audio')} className="flex-1 rounded-xl bg-amber-400 text-slate-950 font-bold py-3 text-sm">Extract Audio (WebM)</button><button onClick={() => startStudioExport('clip')} className="flex-1 rounded-xl bg-indigo-500 text-white font-bold py-3 text-sm">Save Clip (WebM)</button></div>
+                  {studioExportStatus && <p className="text-xs text-emerald-300 animate-pulse">{studioExportStatus}</p>}
+                </div>
+              </div>
+            )}
             {bookmarks.filter(item => item.movieId === currentMovie.id).length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {bookmarks.filter(item => item.movieId === currentMovie.id).slice(-5).map((item, index) => (
