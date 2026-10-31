@@ -31,6 +31,7 @@ import { TranscriptDrawer } from './TranscriptDrawer';
 import { VoiceControlOverlay } from './VoiceControlOverlay';
 import { SemanticSceneSearchBar } from './SemanticSceneSearchBar';
 import { CoWatchPartyDrawer } from './CoWatchPartyDrawer';
+import { SyncService } from './SyncService';
 
 export const CinemaPlayer: React.FC = () => {
   const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
@@ -41,13 +42,10 @@ export const CinemaPlayer: React.FC = () => {
   const currentMovie = MOVIE_SAMPLES[selectedMovieIndex];
   const activeVideoUrl = localVideoUrl || currentMovie.videoUrl;
 
-  const handleLocalVideoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('video/')) {
+  const handleLocalVideoSelect = (file: File) => {
+    if (!file.type.startsWith('video/') && !/\.(mkv|avi|mov|webm|mp4|m4v)$/i.test(file.name)) {
       setSessionStatus('error');
       setSessionError('Please select a valid video file.');
-      event.target.value = '';
       return;
     }
     if (videoRef.current) {
@@ -61,7 +59,6 @@ export const CinemaPlayer: React.FC = () => {
     setSessionError(null);
     setLocalVideoName(file.name);
     setLocalVideoUrl(URL.createObjectURL(file));
-    event.target.value = '';
   };
 
   useEffect(() => {
@@ -769,6 +766,42 @@ export const CinemaPlayer: React.FC = () => {
     }
   };
 
+  // Professional-style keyboard controls. Left/right move one approximate 30fps frame.
+  useEffect(() => {
+    const handlePlayerKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName?.toLowerCase();
+      if (
+        target?.isContentEditable ||
+        ['input', 'textarea', 'select', 'button'].includes(tagName || '')
+      ) return;
+
+      if (event.code === 'Space') {
+        event.preventDefault();
+        togglePlay();
+        return;
+      }
+
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        if (!videoRef.current) return;
+        event.preventDefault();
+        const frameDuration = 1 / 30;
+        const direction = event.key === 'ArrowRight' ? 1 : -1;
+        const nextTime = Math.max(
+          0,
+          Math.min(videoRef.current.duration || duration, videoRef.current.currentTime + direction * frameDuration)
+        );
+        videoRef.current.pause();
+        videoRef.current.currentTime = nextTime;
+        setCurrentTime(nextTime);
+        setIsPlaying(false);
+      }
+    };
+
+    window.addEventListener('keydown', handlePlayerKeyDown);
+    return () => window.removeEventListener('keydown', handlePlayerKeyDown);
+  }, [isPlaying, duration, syncProgressToCloud]);
+
   // Seeker
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = parseFloat(e.target.value);
@@ -1432,24 +1465,11 @@ export const CinemaPlayer: React.FC = () => {
                   <Film className="w-3.5 h-3.5" />
                   <span>FILM STRIP #{selectedMovieIndex + 1}</span>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-sky-400/40 bg-sky-500/10 px-3 py-2 text-xs font-bold text-sky-200 transition hover:bg-sky-500/20">
-                    <Download className="h-3.5 w-3.5" />
-                    <span>Choose Local Video</span>
-                    <input
-                      type="file"
-                      accept="video/*,.mkv,.avi,.mov,.webm,.mp4"
-                      onChange={handleLocalVideoSelect}
-                      className="sr-only"
-                      aria-label="Choose a local video file"
-                    />
-                  </label>
-                  {localVideoName && (
-                    <span className="max-w-[220px] truncate text-[11px] text-sky-300" title={localVideoName}>
-                      Local: {localVideoName}
-                    </span>
-                  )}
-                </div>
+                <SyncService
+                  selectedFileName={localVideoName}
+                  onVideoSelected={handleLocalVideoSelect}
+                  syncStatus={sessionStatus}
+                />
 
                 {/* Genre Tag */}
                 <div className="px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1.5 shadow-sm">
