@@ -39,7 +39,17 @@
           if (panel) panel.style.display = 'block';
         }
         window.addEventListener('error', function (event) {
-          report(event.message || (event.target && (event.target.src || event.target.href)) || 'Resource or JavaScript loading error');
+          // Media/image/font failures must not be reported as an app startup crash.
+          // In particular, a sample movie failing to load should not hide the player UI.
+          var target = event.target;
+          if (target && target !== window) {
+            var tag = target.tagName ? target.tagName.toLowerCase() : '';
+            if (tag === 'video' || tag === 'audio' || tag === 'img' || tag === 'link') return;
+            if (tag !== 'script') return;
+            report('JavaScript resource failed to load: ' + (target.src || target.href || 'unknown script'));
+            return;
+          }
+          report(event.message || 'JavaScript runtime error');
         }, true);
         window.addEventListener('unhandledrejection', function (event) {
           report('Unhandled promise rejection: ' + (event.reason && (event.reason.stack || event.reason.message) || event.reason));
