@@ -1731,21 +1731,6 @@ export const CinemaPlayer: React.FC = () => {
                 )}
               </div>
             )}
-                  <Layers className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="hidden sm:inline">Transcript</span>
-                </button>
-
-                {/* Picture Boost Pill */}
-                <div 
-                  className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-amber-500/30 text-amber-300 text-[11px] font-mono-num font-semibold shadow-xl"
-                  title={`Active Picture Boost: ${pictureBoost.preset}`}
-                >
-                  <Zap className="w-3 h-3 text-amber-400" />
-                  <span className="uppercase text-[10px] tracking-wider">{pictureBoost.preset.replace('_', ' ')}</span>
-                </div>
-              </div>
-            </div>
-
             {/* Split Screen Overlay When Remaster Split is ON */}
             {remaster.enabled && remaster.showSplitSlider && (
               <div 
