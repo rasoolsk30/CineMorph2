@@ -34,6 +34,8 @@ import { CoWatchPartyDrawer } from './CoWatchPartyDrawer';
 
 export const CinemaPlayer: React.FC = () => {
   const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
+  const [sessionStatus, setSessionStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const currentMovie = MOVIE_SAMPLES[selectedMovieIndex];
 
   // Movie dialogues in local state so automated drift correction can recalibrate timestamps
@@ -43,6 +45,8 @@ export const CinemaPlayer: React.FC = () => {
   // Restore the saved subtitle timeline from IndexedDB, then keep it cached for offline use.
   useEffect(() => {
     let cancelled = false;
+    setSessionStatus('loading');
+    setSessionError(null);
     cacheLoadedForMovie.current = null;
     void (async () => {
       try {
@@ -1075,13 +1079,12 @@ export const CinemaPlayer: React.FC = () => {
             <button
               key={movie.id}
               onClick={() => {
-                setSelectedMovieIndex(idx);
+                if (videoRef.current) videoRef.current.pause();
+                setIsPlaying(false);
                 setCurrentTime(0);
-                if (videoRef.current) {
-                  videoRef.current.currentTime = 0;
-                  videoRef.current.play().catch(() => {});
-                  setIsPlaying(true);
-                }
+                setSessionStatus('loading');
+                setSessionError(null);
+                setSelectedMovieIndex(idx);
               }}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                 selectedMovieIndex === idx
@@ -1427,8 +1430,19 @@ export const CinemaPlayer: React.FC = () => {
               ref={videoRef}
               src={currentMovie.videoUrl}
               onTimeUpdate={handleTimeUpdate}
+              preload="metadata"
+              onLoadStart={() => {
+                setSessionStatus('loading');
+                setSessionError(null);
+              }}
               onLoadedMetadata={() => {
                 if (videoRef.current) setDuration(videoRef.current.duration || 35);
+              }}
+              onCanPlay={() => setSessionStatus('ready')}
+              onError={() => {
+                setSessionStatus('error');
+                setSessionError('This video source could not be loaded. Choose another movie or check the video URL.');
+                setIsPlaying(false);
               }}
               onEnded={() => {
                 setIsPlaying(false);
