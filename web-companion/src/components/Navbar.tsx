@@ -6,6 +6,7 @@ interface NavbarProps {
   setActiveTab: (tab: 'player' | 'masterplan' | 'ai-lab' | 'architecture') => void;
   isMobilePreview: boolean;
   setIsMobilePreview: (val: boolean) => void;
+  onLaunchCinema: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,13 +14,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   isMobilePreview,
   setIsMobilePreview,
+  onLaunchCinema,
 }) => {
   return (
     <header className="sticky top-0 z-50 bg-[#08090d]/90 backdrop-blur-md border-b border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
         {/* Zone 1: Brand Wordmark (Single text element) */}
         <div 
-          onClick={() => setActiveTab('player')}
+          onClick={onLaunchCinema}
           className="flex items-center gap-2.5 cursor-pointer whitespace-nowrap shrink-0 group"
         >
           <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:border-amber-400 transition-colors">
@@ -107,12 +109,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
-            onClick={() => {
-              setActiveTab('player');
-              window.setTimeout(() => {
-                document.getElementById('cinemorph-player')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }, 150);
-            }}
+            onClick={onLaunchCinema}
             title="Open the video player"
             className="px-4 py-2 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 active:scale-95 rounded-lg shadow-sm transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
           >
