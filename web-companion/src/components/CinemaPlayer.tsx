@@ -246,6 +246,11 @@ export const CinemaPlayer: React.FC = () => {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
+  // Firestore All Watch Progress Records for Viewing Metrics Dashboard.
+  // These state values must be initialized before the weekly chart reads them.
+  const [allWatchRecords, setAllWatchRecords] = useState<MovieWatchProgressData[]>([]);
+  const [cumulativeWatchSeconds, setCumulativeWatchSeconds] = useState<number>(0);
+
   // Sample 7-Day Weekly Viewing Trend Data (for Recharts-style 'time spent watching' chart)
   const weeklyViewingData = [
     { day: 'Mon', minutes: 18, date: 'May 12' },
@@ -257,10 +262,6 @@ export const CinemaPlayer: React.FC = () => {
     { day: 'Sun', minutes: Math.max(25, Math.round((cumulativeWatchSeconds + currentTime) / 60)), date: 'Today' },
   ];
   const maxWeeklyMinutes = Math.max(...weeklyViewingData.map(d => d.minutes), 60);
-
-  // Firestore All Watch Progress Records for Viewing Metrics Dashboard
-  const [allWatchRecords, setAllWatchRecords] = useState<MovieWatchProgressData[]>([]);
-  const [cumulativeWatchSeconds, setCumulativeWatchSeconds] = useState<number>(0);
 
   const loadCumulativeMetrics = useCallback(async (uid: string) => {
     try {
