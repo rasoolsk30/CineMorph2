@@ -9,7 +9,7 @@ import { CinemaPlayer } from './components/CinemaPlayer';
 import { MarketMasterplan } from './components/MarketMasterplan';
 import { AiStudioPlayground } from './components/AiStudioPlayground';
 import { ArchitectureView } from './components/ArchitectureView';
-import { Play, Sparkles, BookOpen, Cpu } from 'lucide-react';
+import { Play, Sparkles, BookOpen, Cpu, Film } from 'lucide-react';
 
 class AppErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -64,6 +64,30 @@ export default function App() {
     }, 180);
   };
 
+  const renderLaunchScreen = () => (
+    <section className="w-full max-w-5xl mx-auto min-h-[68vh] flex items-center justify-center">
+      <div className="w-full rounded-3xl border border-amber-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-black p-8 sm:p-14 text-center shadow-2xl">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-amber-300">
+          <Film className="h-8 w-8" />
+        </div>
+        <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-amber-400">CineMorph AI</p>
+        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">Your Cinema. Your Controls.</h1>
+        <p className="mx-auto mt-5 max-w-2xl text-sm sm:text-base leading-7 text-slate-400">
+          Launch the cinema workspace, choose a movie, and configure playback, audio, subtitles and available AI tools in one place.
+        </p>
+        <button
+          type="button"
+          onClick={launchCinema}
+          className="mt-8 inline-flex items-center gap-3 rounded-xl bg-amber-400 px-7 py-4 text-sm font-extrabold text-slate-950 shadow-lg transition hover:bg-amber-300 active:scale-[0.98]"
+        >
+          <Play className="h-5 w-5 fill-current" />
+          Launch Cinema Workspace
+        </button>
+        <p className="mt-5 text-xs text-slate-500">Local player workspace opens first. Cloud and AI tools remain feature-dependent.</p>
+      </div>
+    </section>
+  );
+
   return (
     <div className="min-h-screen bg-[#08090d] text-slate-100 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950">
       <Navbar
@@ -80,36 +104,14 @@ export default function App() {
             <div className="w-full max-w-[420px] bg-slate-950 border-4 border-slate-800 rounded-[3rem] p-3 shadow-2xl relative my-4 overflow-hidden min-h-[820px] flex flex-col">
               <div className="w-32 h-4 bg-slate-800 rounded-full mx-auto mb-3 shrink-0" />
               <div className="flex-1 overflow-y-auto pb-20">
-                {activeTab === 'player' && !isCinemaLaunched && {activeTab === 'player' && !isCinemaLaunched ? (
-            <section className="w-full max-w-5xl mx-auto min-h-[68vh] flex items-center justify-center">
-              <div className="w-full rounded-3xl border border-amber-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-black p-8 sm:p-14 text-center shadow-2xl">
-                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-400/10 text-amber-300">
-                  <Film className="h-8 w-8" />
-                </div>
-                <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-amber-400">CineMorph AI</p>
-                <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">Your Cinema. Your Controls.</h1>
-                <p className="mx-auto mt-5 max-w-2xl text-sm sm:text-base leading-7 text-slate-400">
-                  Launch the cinema workspace, choose a movie, and configure playback, audio, subtitles and available AI tools in one place.
-                </p>
-                <button
-                  type="button"
-                  onClick={launchCinema}
-                  className="mt-8 inline-flex items-center gap-3 rounded-xl bg-amber-400 px-7 py-4 text-sm font-extrabold text-slate-950 shadow-lg transition hover:bg-amber-300 active:scale-[0.98]"
-                >
-                  <Play className="h-5 w-5 fill-current" />
-                  Launch Cinema Workspace
-                </button>
-                <p className="mt-5 text-xs text-slate-500">Local player workspace opens first. Cloud and AI tools remain feature-dependent.</p>
-              </div>
-            </section>
-          ) : null}}
-              {activeTab === 'player' && isCinemaLaunched && <CinemaPlayer />}
+                {activeTab === 'player' && !isCinemaLaunched && renderLaunchScreen()}
+                {activeTab === 'player' && isCinemaLaunched && <CinemaPlayer />}
                 {activeTab === 'masterplan' && <MarketMasterplan />}
                 {activeTab === 'ai-lab' && <AiStudioPlayground />}
                 {activeTab === 'architecture' && <ArchitectureView />}
               </div>
               <div className="absolute bottom-3 left-3 right-3 h-16 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 flex items-center justify-around px-2 z-40">
-                <button onClick={() => setActiveTab('player')} className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] ${activeTab === 'player' ? 'text-amber-400' : 'text-slate-400'}`}>
+                <button onClick={launchCinema} className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] ${activeTab === 'player' ? 'text-amber-400' : 'text-slate-400'}`}>
                   <Play className="w-5 h-5 fill-current" />
                   <span className="text-[10px] font-medium mt-1">Player</span>
                 </button>
@@ -129,6 +131,7 @@ export default function App() {
             </div>
           ) : (
             <div className="w-full max-w-7xl">
+              {activeTab === 'player' && !isCinemaLaunched && renderLaunchScreen()}
               {activeTab === 'player' && isCinemaLaunched && <CinemaPlayer />}
               {activeTab === 'masterplan' && <MarketMasterplan />}
               {activeTab === 'ai-lab' && <AiStudioPlayground />}
