@@ -18,8 +18,8 @@ import {
   MOVIE_SAMPLES, DUBBING_MOODS, SUPPORTED_LANGUAGES, VOICE_PERSONAS 
 } from '../data/cinemaSamples';
 import { 
-  auth, ensureAuthenticatedUser, saveWatchProgress, getWatchProgress, getAllWatchProgress,
-  loginWithGoogle, MovieWatchProgressData 
+  ensureAuthenticatedUser, saveWatchProgress, getWatchProgress, getAllWatchProgress,
+  MovieWatchProgressData 
 } from '../lib/firebase';
 import { User } from 'firebase/auth';
 import { HistoryView } from './HistoryView';
@@ -301,6 +301,7 @@ export const CinemaPlayer: React.FC = () => {
 
   // Firebase Firestore User & Sync State
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isConnectingCloud, setIsConnectingCloud] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncedTime, setLastSyncedTime] = useState<string | null>(null);
   const [resumePrompt, setResumePrompt] = useState<{ seconds: number; percent: number } | null>(null);
@@ -330,28 +331,11 @@ export const CinemaPlayer: React.FC = () => {
     return () => window.removeEventListener('cinemorph_persona_change', handlePersonaChange);
   }, []);
 
-  // Initialize Firebase Auth & Load Watch Progress on Mount
+  // Local playback starts independently; browser speech synthesis is initialized locally.
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        setCurrentUser(user);
-        loadUserProgress(user.uid, currentMovie.id);
-      } else {
-        const anonUser = await ensureAuthenticatedUser();
-        if (anonUser) {
-          setCurrentUser(anonUser);
-          loadUserProgress(anonUser.uid, currentMovie.id);
-        }
-      }
-    });
-
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       speechSynthRef.current = window.speechSynthesis;
     }
-
-    return () => {
-      unsubscribe();
-    };
   }, []);
 
   // When Movie Changes, Load Progress from Firestore
@@ -364,7 +348,6 @@ export const CinemaPlayer: React.FC = () => {
     lastSpokenADTimestamp.current = -1;
     if (speechSynthRef.current) speechSynthRef.current.cancel();
 
-    fetchSceneInsight(currentMovie.synopsisEnglish);
   }, [currentMovie.id]);
 
   const loadUserProgress = async (uid: string, movieId: string) => {
@@ -412,6 +395,22 @@ export const CinemaPlayer: React.FC = () => {
       }
     } catch (err) {
       console.warn('Failed to load user progress:', err);
+    }
+  };
+
+  const handleConnectCloud = async () => {
+    if (currentUser || isConnectingCloud) return;
+    setIsConnectingCloud(true);
+    try {
+      const user = await ensureAuthenticatedUser();
+      if (user) {
+        setCurrentUser(user);
+        await loadUserProgress(user.uid, currentMovie.id);
+      }
+    } catch (error) {
+      console.warn('Cloud connection unavailable; local playback remains active.', error);
+    } finally {
+      setIsConnectingCloud(false);
     }
   };
 
@@ -1075,6 +1074,18 @@ export const CinemaPlayer: React.FC = () => {
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
             Featured Scene:
           </span>
+          <span
+            title={sessionError || (sessionStatus === 'ready' ? 'Video is ready to play' : 'Preparing selected video')}
+            className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${
+              sessionStatus === 'ready'
+                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                : sessionStatus === 'error'
+                  ? 'bg-red-500/15 text-red-300 border border-red-500/30'
+                  : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+            }`}
+          >
+            {sessionStatus === 'ready' ? 'Session Ready' : sessionStatus === 'error' ? 'Video Error' : 'Preparing Session'}
+          </span>
           {MOVIE_SAMPLES.map((movie, idx) => (
             <button
               key={movie.id}
@@ -1123,6 +1134,15 @@ export const CinemaPlayer: React.FC = () => {
               showHUD('subtitles', 100, `Searching: "${query}"`);
             }}
           />
+
+          <button
+            onClick={handleConnectCloud}
+            disabled={!!currentUser || isConnectingCloud}
+            className="px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 hover:border-amber-400 text-slate-300 text-xs font-semibold disabled:opacity-60"
+            title="Cloud sync is optional; local playback does not depend on it"
+          >
+            {currentUser ? 'Cloud Connected' : isConnectingCloud ? 'Connecting…' : 'Connect Cloud'}
+          </button>
 
           {/* Real-Time Co-Watch Party Button */}
           <button
