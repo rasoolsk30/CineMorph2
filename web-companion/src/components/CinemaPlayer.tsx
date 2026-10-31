@@ -35,6 +35,8 @@ import { SyncService } from './SyncService';
 
 export const CinemaPlayer: React.FC = () => {
   const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
+  const [recentMovieIndices, setRecentMovieIndices] = useState<number[]>([]);
+  const [isQuickSettingsOpen, setIsQuickSettingsOpen] = useState(false);
   const [sessionStatus, setSessionStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [localVideoUrl, setLocalVideoUrl] = useState<string | null>(null);
@@ -65,6 +67,49 @@ export const CinemaPlayer: React.FC = () => {
     if (!localVideoUrl) return;
     return () => URL.revokeObjectURL(localVideoUrl);
   }, [localVideoUrl]);
+
+  // Keep the last three sample movies the user opened, locally in this browser.
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('cinemorph_recent_movies') || '[]');
+      if (Array.isArray(saved)) {
+        setRecentMovieIndices(saved.filter((index): index is number =>
+          Number.isInteger(index) && index >= 0 && index < MOVIE_SAMPLES.length
+        ).slice(0, 3));
+      }
+    } catch (error) {
+      console.warn('Recent movie history unavailable:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('cinemorph_recent_movies', JSON.stringify(recentMovieIndices.slice(0, 3)));
+    } catch (error) {
+      console.warn('Recent movie history could not be saved:', error);
+    }
+  }, [recentMovieIndices]);
+
+  const rememberRecentMovie = (index: number) => {
+    setRecentMovieIndices(previous => [index, ...previous.filter(item => item !== index)].slice(0, 3));
+  };
+
+  const handleReprocessRecentMovie = (index: number) => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    setSessionStatus('loading');
+    setSessionError(null);
+    setLocalVideoUrl(null);
+    setLocalVideoName(null);
+    setSelectedMovieIndex(index);
+    rememberRecentMovie(index);
+    setIsQuickSettingsOpen(false);
+  };
 
   // Movie dialogues in local state so automated drift correction can recalibrate timestamps
   const [movieDialogues, setMovieDialogues] = useState<DialogueLine[]>(currentMovie.dialogues);
@@ -1130,6 +1175,10 @@ export const CinemaPlayer: React.FC = () => {
   // Current active language object
   const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === dubbing.targetLang) || SUPPORTED_LANGUAGES[0];
 
+  // The current enhancement is the player's live CSS remaster/filter pipeline,
+  // not a server-side AI model job. Pulse only while playback + enhancement are active.
+  const isEnhancementActive = remaster.enabled && isPlaying;
+
   return (
     <div id="cinemorph-player" className="w-full scroll-mt-20">
       {/* Top Status & Sync Banner */}
@@ -1162,6 +1211,7 @@ export const CinemaPlayer: React.FC = () => {
                 setLocalVideoUrl(null);
                 setLocalVideoName(null);
                 setSelectedMovieIndex(idx);
+                rememberRecentMovie(idx);
               }}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                 selectedMovieIndex === idx
@@ -1176,6 +1226,51 @@ export const CinemaPlayer: React.FC = () => {
 
         {/* Feature Switches & AI Overlays Strip in Header */}
         <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-400">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsQuickSettingsOpen(open => !open)}
+              aria-expanded={isQuickSettingsOpen}
+              className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${isQuickSettingsOpen ? 'border-amber-400 bg-amber-400/20 text-amber-200' : 'border-slate-700 bg-slate-800 text-slate-200 hover:border-amber-400'}`}
+            >
+              Quick Settings
+            </button>
+            {isQuickSettingsOpen && (
+              <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl border border-slate-700 bg-slate-950 p-4 shadow-2xl">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white">Quick Settings</h3>
+                  <button type="button" onClick={() => setIsQuickSettingsOpen(false)} className="rounded p-1 text-slate-400 hover:text-white" aria-label="Close quick settings"><X className="h-4 w-4" /></button>
+                </div>
+                <label className="flex cursor-pointer items-center justify-between gap-3 border-b border-slate-800 py-3">
+                  <span className="text-xs font-semibold text-slate-200">Dubbing Mode</span>
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    checked={dubbing.enabled}
+                    onChange={event => setDubbing(previous => ({ ...previous, enabled: event.target.checked }))}
+                    className="h-4 w-4 accent-amber-400"
+                  />
+                </label>
+                <div className="pt-3">
+                  <p className="mb-2 text-xs font-semibold text-slate-200">Subtitle Language</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([{ code: 'te', label: 'Telugu' }, { code: 'en', label: 'English' }] as const).map(language => (
+                      <button
+                        key={language.code}
+                        type="button"
+                        onClick={() => handleQuickLanguageSelect(language.code as SupportedLanguage)}
+                        aria-pressed={dubbing.targetLang === language.code}
+                        className={`rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${dubbing.targetLang === language.code ? 'border-amber-400 bg-amber-400/20 text-amber-200' : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500'}`}
+                      >
+                        {language.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Hands-Free Voice AI Control Overlay */}
           <VoiceControlOverlay
             isPlaying={isPlaying}
@@ -1286,6 +1381,35 @@ export const CinemaPlayer: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Recent Movies: one-click restart/re-processing of the last three sample titles */}
+      {recentMovieIndices.length > 0 && (
+        <section className="mb-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">Recent Movies</h3>
+            <span className="text-[10px] text-slate-500">Last 3 opened · stored on this device</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {recentMovieIndices.map(index => {
+              const movie = MOVIE_SAMPLES[index];
+              if (!movie) return null;
+              return (
+                <button
+                  key={movie.id}
+                  type="button"
+                  onClick={() => handleReprocessRecentMovie(index)}
+                  className="flex min-w-0 items-center gap-2 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-left transition hover:border-amber-400 hover:bg-slate-800"
+                  title={`Reopen and restart ${movie.title}`}
+                >
+                  <Film className="h-4 w-4 shrink-0 text-amber-400" />
+                  <span className="max-w-[180px] truncate text-xs font-semibold text-white">{movie.title}</span>
+                  <span className="shrink-0 text-[10px] font-bold text-amber-300">Reprocess ↻</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* 📊 VIEWING METRICS DASHBOARD ('TIME SPENT WATCHING' & FIRESTORE CLOUD SYNC) */}
       <div className="mb-4 p-4 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl flex flex-col gap-3">
@@ -1749,7 +1873,7 @@ export const CinemaPlayer: React.FC = () => {
                           setRemaster(prev => ({ ...prev, enabled: !prev.enabled }));
                           showHUD('brightness', remaster.enabled ? 0 : 100, `4K AI Upscaling: ${!remaster.enabled ? 'ON' : 'OFF'}`);
                         }}
-                        className={`w-full px-3 py-2 rounded-xl text-left text-xs font-semibold flex items-center justify-between transition-colors ${
+                        className={`w-full px-3 py-2 rounded-xl text-left text-xs font-semibold flex items-center justify-between transition-colors ${isEnhancementActive ? 'animate-pulse ring-1 ring-amber-300/60' : ''} ${
                           remaster.enabled
                             ? 'bg-amber-400/20 text-amber-300 border border-amber-500/40'
                             : 'bg-slate-900 text-slate-200 hover:bg-slate-800 border border-slate-800'
@@ -1757,7 +1881,7 @@ export const CinemaPlayer: React.FC = () => {
                       >
                         <span className="flex items-center gap-2">
                           <Zap className="w-3.5 h-3.5 text-amber-400" />
-                          <span>4K AI Upscaling</span>
+                          <span>Enhance</span>
                         </span>
                         <span className="text-[10px] font-mono-num font-bold">{remaster.enabled ? 'ON' : 'OFF'}</span>
                       </button>
