@@ -36,7 +36,7 @@ export const SmartSceneTickerBar: React.FC<SmartSceneTickerBarProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchTicker = async () => {
-    setInternalLoading(true);
+    setIsLoading(true);
     try {
       const response = await fetch('/api/ai/smart-scene-summary', {
         method: 'POST',
@@ -55,7 +55,7 @@ export const SmartSceneTickerBar: React.FC<SmartSceneTickerBarProps> = ({
     } catch (err) {
       console.warn('Smart ticker fetch failed:', err);
     } finally {
-      setInternalLoading(false);
+      setIsLoading(false);
     }
   };
 
