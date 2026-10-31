@@ -36,7 +36,38 @@ export const CinemaPlayer: React.FC = () => {
   const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
   const [sessionStatus, setSessionStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [sessionError, setSessionError] = useState<string | null>(null);
+  const [localVideoUrl, setLocalVideoUrl] = useState<string | null>(null);
+  const [localVideoName, setLocalVideoName] = useState<string | null>(null);
   const currentMovie = MOVIE_SAMPLES[selectedMovieIndex];
+  const activeVideoUrl = localVideoUrl || currentMovie.videoUrl;
+
+  const handleLocalVideoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      setSessionStatus('error');
+      setSessionError('Please select a valid video file.');
+      event.target.value = '';
+      return;
+    }
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    setSessionStatus('loading');
+    setSessionError(null);
+    setLocalVideoName(file.name);
+    setLocalVideoUrl(URL.createObjectURL(file));
+    event.target.value = '';
+  };
+
+  useEffect(() => {
+    if (!localVideoUrl) return;
+    return () => URL.revokeObjectURL(localVideoUrl);
+  }, [localVideoUrl]);
 
   // Movie dialogues in local state so automated drift correction can recalibrate timestamps
   const [movieDialogues, setMovieDialogues] = useState<DialogueLine[]>(currentMovie.dialogues);
@@ -1095,6 +1126,8 @@ export const CinemaPlayer: React.FC = () => {
                 setCurrentTime(0);
                 setSessionStatus('loading');
                 setSessionError(null);
+                setLocalVideoUrl(null);
+                setLocalVideoName(null);
                 setSelectedMovieIndex(idx);
               }}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
@@ -1399,6 +1432,24 @@ export const CinemaPlayer: React.FC = () => {
                   <Film className="w-3.5 h-3.5" />
                   <span>FILM STRIP #{selectedMovieIndex + 1}</span>
                 </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-sky-400/40 bg-sky-500/10 px-3 py-2 text-xs font-bold text-sky-200 transition hover:bg-sky-500/20">
+                    <Download className="h-3.5 w-3.5" />
+                    <span>Choose Local Video</span>
+                    <input
+                      type="file"
+                      accept="video/*,.mkv,.avi,.mov,.webm,.mp4"
+                      onChange={handleLocalVideoSelect}
+                      className="sr-only"
+                      aria-label="Choose a local video file"
+                    />
+                  </label>
+                  {localVideoName && (
+                    <span className="max-w-[220px] truncate text-[11px] text-sky-300" title={localVideoName}>
+                      Local: {localVideoName}
+                    </span>
+                  )}
+                </div>
 
                 {/* Genre Tag */}
                 <div className="px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1.5 shadow-sm">
@@ -1448,7 +1499,8 @@ export const CinemaPlayer: React.FC = () => {
             {/* The Main Video Stream */}
             <video
               ref={videoRef}
-              src={currentMovie.videoUrl}
+              src={activeVideoUrl}
+              key={activeVideoUrl}
               onTimeUpdate={handleTimeUpdate}
               preload="metadata"
               onLoadStart={() => {
