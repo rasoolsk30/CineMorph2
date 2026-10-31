@@ -88,7 +88,7 @@ export async function testConnection() {
     }
   }
 }
-testConnection();
+// Connection checks are intentionally opt-in; local playback must not depend on Firebase.
 
 // Auto authenticate with anonymous account or return existing
 export async function ensureAuthenticatedUser(): Promise<User | null> {
