@@ -5,7 +5,7 @@ import {
   Smile, Flame, BookOpen, Moon, Activity, Accessibility, Ear,
   Layers, RefreshCw, X, Volume1, Compass, Heart, Globe, ChevronDown,
   Wand2, Clock, CheckCircle2, AlertCircle, FastForward, Rewind,
-  Download, Gauge, Zap, Film, Tag, Users, Mic, Search, BarChart3, Database, TrendingUp, Tv, Cpu, Type, Lock, Shield
+  Download, Gauge, Zap, Film, Tag, Users, Mic, Search, BarChart3, Database, TrendingUp, Tv, Cpu, Type, Lock, Shield, Maximize2, Minimize2, Bookmark, Camera, Headphones, Repeat
 } from 'lucide-react';
 import { 
   MovieScene, RemasterSettings, DubbingSettings, DialogueLine, 
@@ -150,6 +150,14 @@ export const CinemaPlayer: React.FC = () => {
   const [volume, setVolume] = useState(0.85);
   const [brightness, setBrightness] = useState(100);
   const [isMuted, setIsMuted] = useState(false);
+  const [bufferedPercent, setBufferedPercent] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isAudioOnly, setIsAudioOnly] = useState(false);
+  const [loopStart, setLoopStart] = useState<number | null>(null);
+  const [loopEnd, setLoopEnd] = useState<number | null>(null);
+  const [bookmarks, setBookmarks] = useState<Array<{ movieId: string; time: number; note: string }>>(() => {
+    try { return JSON.parse(localStorage.getItem('cinemorph_bookmarks') || '[]'); } catch { return []; }
+  });
 
   // Quick-Access Language Menu Overlay state
   const [isQuickLangMenuOpen, setIsQuickLangMenuOpen] = useState(false);
@@ -680,6 +688,11 @@ export const CinemaPlayer: React.FC = () => {
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
     const time = videoRef.current.currentTime;
+    if (loopStart !== null && loopEnd !== null && loopEnd > loopStart && time >= loopEnd) {
+      videoRef.current.currentTime = loopStart;
+      setCurrentTime(loopStart);
+      return;
+    }
     setCurrentTime(time);
 
     // Track active dialogue line from the calibrated dialogues list
@@ -1654,6 +1667,12 @@ export const CinemaPlayer: React.FC = () => {
               onLoadedMetadata={() => {
                 if (videoRef.current) setDuration(videoRef.current.duration || 35);
               }}
+              onProgress={() => {
+                const video = videoRef.current;
+                if (!video || !video.duration || !video.buffered.length) return;
+                const end = video.buffered.end(video.buffered.length - 1);
+                setBufferedPercent(Math.min(100, (end / video.duration) * 100));
+              }}
               onCanPlay={() => setSessionStatus('ready')}
               onError={() => {
                 setSessionStatus('error');
@@ -1664,7 +1683,7 @@ export const CinemaPlayer: React.FC = () => {
                 setIsPlaying(false);
                 syncProgressToCloud();
               }}
-              className="w-full h-full object-cover pointer-events-none"
+              className={`w-full h-full object-cover pointer-events-none transition-opacity duration-200 ${isAudioOnly ? 'opacity-0' : 'opacity-100'}`}
               style={{
                 filter: remaster.enabled && !remaster.showSplitSlider ? getVideoFilterStyle() : `brightness(${brightness / 100})`,
               }}
@@ -2199,24 +2218,94 @@ export const CinemaPlayer: React.FC = () => {
 
           {/* Transport Controls Bar */}
           <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-slate-800 flex flex-col gap-2.5">
-            {/* Scrubber Bar */}
+            {/* Interactive timeline: buffered range, played range and precise seeking */}
             <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-400 font-mono-num w-10">
-                {Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}
+              <span className="text-xs text-slate-300 font-mono-num w-10">
+                {Math.floor(currentTime / 60)}:{Math.floor(currentTime % 60).toString().padStart(2, '0')}
               </span>
-              <input
-                type="range"
-                min="0"
-                max={duration || 35}
-                step="0.1"
-                value={currentTime}
-                onChange={handleSeek}
-                className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-              />
-              <span className="text-xs text-slate-400 font-mono-num w-10 text-right">
-                {Math.floor((duration || 35) / 60)}:{(Math.floor((duration || 35) % 60)).toString().padStart(2, '0')}
+              <div className="relative flex-1 h-5 flex items-center">
+                <div className="absolute left-0 right-0 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                  <div className="absolute inset-y-0 left-0 bg-slate-400/70" style={{ width: `${bufferedPercent}%` }} />
+                  <div className="absolute inset-y-0 left-0 bg-amber-400" style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }} />
+                </div>
+                {loopStart !== null && <div className="absolute h-3 w-1 bg-emerald-400 rounded" style={{ left: `${duration ? loopStart / duration * 100 : 0}%` }} />}
+                {loopEnd !== null && <div className="absolute h-3 w-1 bg-rose-400 rounded" style={{ left: `${duration ? loopEnd / duration * 100 : 0}%` }} />}
+                <input aria-label="Video timeline" type="range" min="0" max={duration || 35} step="0.01" value={currentTime} onChange={handleSeek} className="relative z-10 w-full h-5 appearance-none cursor-pointer bg-transparent accent-amber-400" />
+              </div>
+              <span className="text-xs text-slate-300 font-mono-num w-10 text-right">
+                {Math.floor((duration || 35) / 60)}:{Math.floor((duration || 35) % 60).toString().padStart(2, '0')}
               </span>
             </div>
+            <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400">
+              <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400" /> Buffered {Math.round(bufferedPercent)}%</span>
+              {loopStart !== null && loopEnd !== null && <span className="text-emerald-300">A–B loop: {loopStart.toFixed(1)}s–{loopEnd.toFixed(1)}s</span>}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={async () => {
+                const el = videoContainerRef.current;
+                if (!el) return;
+                try {
+                  if (!document.fullscreenElement) { await el.requestFullscreen(); setIsFullscreen(true); }
+                  else { await document.exitFullscreen(); setIsFullscreen(false); }
+                } catch (error) { console.warn('Fullscreen unavailable:', error); }
+              }} className="px-2.5 py-1.5 rounded-lg bg-slate-800/90 text-slate-200 text-xs flex items-center gap-1.5 hover:bg-slate-700">
+                {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />} {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+              </button>
+              <button onClick={() => setIsAudioOnly(v => !v)} className={`px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 ${isAudioOnly ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>
+                <Headphones className="w-3.5 h-3.5" /> Audio only {isAudioOnly ? 'ON' : 'OFF'}
+              </button>
+              <button onClick={() => {
+                const next = [...bookmarks, { movieId: currentMovie.id, time: currentTime, note: window.prompt('ఈ సీన్ గురించి చిన్న నోట్ రాయండి:') || '' }];
+                setBookmarks(next);
+                try { localStorage.setItem('cinemorph_bookmarks', JSON.stringify(next)); } catch (e) { console.warn(e); }
+              }} className="px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-200 text-xs flex items-center gap-1.5 hover:bg-slate-700">
+                <Bookmark className="w-3.5 h-3.5" /> Bookmark / Note
+              </button>
+              <button onClick={() => {
+                if (loopStart === null || loopEnd !== null) { setLoopStart(currentTime); setLoopEnd(null); }
+                else if (currentTime > loopStart) setLoopEnd(currentTime);
+                else { setLoopStart(currentTime); setLoopEnd(null); }
+              }} className="px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-200 text-xs flex items-center gap-1.5 hover:bg-slate-700">
+                <Repeat className="w-3.5 h-3.5" /> {loopStart === null ? 'Set A' : loopEnd === null ? 'Set B' : 'Reset A–B'}
+              </button>
+              {loopStart !== null && loopEnd !== null && <button onClick={() => { setLoopStart(null); setLoopEnd(null); }} className="px-2.5 py-1.5 rounded-lg bg-rose-950/70 text-rose-200 text-xs">Clear A–B</button>}
+              <button onClick={async () => {
+                const video = videoRef.current;
+                if (!video || !video.videoWidth) return;
+                try {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                  canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+                  if (!blob) throw new Error('Frame export failed');
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a'); a.href = url; a.download = `cinemorph-frame-${Math.floor(currentTime)}.png`; a.click();
+                  URL.revokeObjectURL(url);
+                } catch (error) { alert('ఈ వీడియో source frame export‌ను అనుమతించలేదు (CORS పరిమితి ఉండవచ్చు).'); }
+              }} className="px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-200 text-xs flex items-center gap-1.5 hover:bg-slate-700">
+                <Camera className="w-3.5 h-3.5" /> Save Frame
+              </button>
+              <button onClick={async () => {
+                try {
+                  await Promise.all([
+                    cacheLocalRecord('movieMetadata', currentMovie.id, { id: currentMovie.id, title: currentMovie.titleEnglish, genre: currentMovie.genre, duration: currentMovie.duration, cachedAt: new Date().toISOString() }),
+                    cacheLocalRecord('subtitles', currentMovie.id, movieDialogues),
+                  ]);
+                  alert('Movie metadata and available dubbing dialogue tracks are saved for offline access. Video file itself is not downloaded.');
+                } catch (error) { alert('Offline cache failed. Check browser storage permissions.'); }
+              }} className="px-2.5 py-1.5 rounded-lg bg-emerald-900/70 text-emerald-200 text-xs flex items-center gap-1.5 hover:bg-emerald-800">
+                <Download className="w-3.5 h-3.5" /> Cache for Offline
+              </button>
+            </div>
+            {bookmarks.filter(item => item.movieId === currentMovie.id).length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {bookmarks.filter(item => item.movieId === currentMovie.id).slice(-5).map((item, index) => (
+                  <button key={`${item.time}-${index}`} onClick={() => { if (videoRef.current) videoRef.current.currentTime = item.time; setCurrentTime(item.time); }} className="text-[10px] px-2 py-1 rounded-md bg-indigo-950/80 text-indigo-200 border border-indigo-800">
+                    {Math.floor(item.time / 60)}:{Math.floor(item.time % 60).toString().padStart(2, '0')} {item.note ? `· ${item.note.slice(0, 24)}` : 'Bookmark'}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Buttons Row */}
             <div className="flex items-center justify-between pt-1">
