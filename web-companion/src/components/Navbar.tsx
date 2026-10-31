@@ -107,8 +107,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('player')}
-            className="px-4 py-2 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-lg shadow-sm transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
+            onClick={() => {
+              setActiveTab('player');
+              window.setTimeout(() => {
+                document.getElementById('cinemorph-player')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 150);
+            }}
+            title="Open the video player"
+            className="px-4 py-2 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 active:scale-95 rounded-lg shadow-sm transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>Launch Cinema</span>
