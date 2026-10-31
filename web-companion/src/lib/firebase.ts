@@ -97,8 +97,20 @@ export async function ensureAuthenticatedUser(): Promise<User | null> {
     const cred = await signInAnonymously(auth);
     return cred.user;
   } catch (err) {
-    console.warn('Anonymous auth error:', err);
-    return null;
+    const firebaseError = err as { code?: string; message?: string };
+    const code = firebaseError?.code || 'unknown';
+    const message = firebaseError?.message || String(err);
+    console.error('Anonymous auth error:', {
+      code,
+      message,
+      projectId: auth.app.options.projectId,
+      authDomain: auth.app.options.authDomain,
+    });
+    // Preserve the real Firebase error so the UI can show the cause instead
+    // of incorrectly telling users to enable Anonymous Authentication.
+    throw new Error(
+      `Firebase Anonymous Auth failed [${code}] on project "${auth.app.options.projectId}": ${message}`
+    );
   }
 }
 
