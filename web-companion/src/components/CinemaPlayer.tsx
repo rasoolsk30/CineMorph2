@@ -33,6 +33,7 @@ import { VoiceControlOverlay } from './VoiceControlOverlay';
 import { SemanticSceneSearchBar } from './SemanticSceneSearchBar';
 import { CoWatchPartyDrawer } from './CoWatchPartyDrawer';
 import { SyncService } from './SyncService';
+import { LocalVideoVault } from './LocalVideoVault';
 
 type CinemaPlayerProps = { initialLocalFile?: File | null };
 
@@ -1309,6 +1310,8 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
         </div>
         <p className="mt-3 text-[10px] leading-4 text-slate-500">Server health does not verify Gemini credentials or actual movie analysis. Local playback remains independent of AI and cloud availability.</p>
       </section>
+      <LocalVideoVault onPlayFile={handleLocalVideoSelect} />
+
       {/* Top Status & Sync Banner */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900/80 rounded-2xl border border-slate-800">
         <div className="flex items-center gap-2 overflow-x-auto">
