@@ -113,6 +113,31 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
     return () => URL.revokeObjectURL(localVideoUrl);
   }, [localVideoUrl]);
 
+  useEffect(() => {
+    setCinemaSession(createCinemaSession(localVideoName || currentMovie.titleEnglish, localVideoName ? 'local-file' : 'sample'));
+  }, [localVideoName, currentMovie.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/health')
+      .then(response => {
+        if (!response.ok) throw new Error('AI server is unreachable');
+        return response.json();
+      })
+      .then(() => {
+        if (!cancelled) {
+          setAiSetupStatus('online');
+          setAiEndpointCount(8);
+        }
+      })
+      .catch(() => { if (!cancelled) setAiSetupStatus('offline'); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const updateSession = (patch: Partial<Pick<CinemaSession, 'status' | 'playbackSeconds' | 'durationSeconds'>>) => {
+    setCinemaSession(previous => updateCinemaSession(previous, patch));
+  };
+
   // Keep the last three sample movies the user opened, locally in this browser.
   useEffect(() => {
     try {
