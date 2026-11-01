@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createCinemaSession, updateCinemaSession, formatSessionTime, CinemaSession } from '../lib/cinema-session';
 import { 
   Play, Pause, RotateCcw, Volume2, VolumeX, Sparkles, Sliders, Eye, 
   HelpCircle, Radio, Info, Sun, Check, ChevronRight, MessageSquare,
@@ -45,6 +46,37 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
   const [localVideoName, setLocalVideoName] = useState<string | null>(null);
   const currentMovie = MOVIE_SAMPLES[selectedMovieIndex];
   const activeVideoUrl = localVideoUrl || currentMovie.videoUrl;
+  const [cinemaSession, setCinemaSession] = useState<CinemaSession>(() =>
+    createCinemaSession(initialLocalFile?.name || currentMovie.titleEnglish, initialLocalFile ? 'local-file' : 'sample')
+  );
+  const [aiSetupStatus, setAiSetupStatus] = useState<'checking' | 'configured' | 'missing' | 'unreachable'>('checking');
+  const [aiEndpointCount, setAiEndpointCount] = useState(0);
+
+  // Each selected movie gets a fresh, identifiable Cinema Session.
+  useEffect(() => {
+    setCinemaSession(createCinemaSession(localVideoName || currentMovie.titleEnglish, localVideoName ? 'local-file' : 'sample'));
+  }, [localVideoName, currentMovie.id]);
+
+  // Check backend and Gemini configuration without exposing credentials.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/session/capabilities')
+      .then(async response => {
+        if (!response.ok) throw new Error('Capability check failed');
+        return response.json();
+      })
+      .then(data => {
+        if (cancelled) return;
+        setAiSetupStatus(data?.gemini?.configured ? 'configured' : 'missing');
+        setAiEndpointCount(data?.endpoints ? Object.values(data.endpoints).filter(Boolean).length : 0);
+      })
+      .catch(() => { if (!cancelled) setAiSetupStatus('unreachable'); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const updateSession = (patch: Partial<Pick<CinemaSession, 'status' | 'playbackSeconds' | 'durationSeconds'>>) => {
+    setCinemaSession(previous => updateCinemaSession(previous, patch));
+  };
 
   const handleLocalVideoSelect = (file: File) => {
     if (!file.type.startsWith('video/') && !/\.(mkv|avi|mov|webm|mp4|m4v)$/i.test(file.name)) {
@@ -750,6 +782,7 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
       return;
     }
     setCurrentTime(time);
+    updateSession({ playbackSeconds: time, status: videoRef.current.paused ? 'paused' : 'playing' });
     if (studioRecorderRef.current?.state === 'recording' && time >= studioEnd) {
       videoRef.current.pause();
       setIsPlaying(false);
@@ -1257,6 +1290,28 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
 
   return (
     <div id="cinemorph-player" className="w-full scroll-mt-20">
+      {/* Cinema Session Manager: live session identity and service configuration status */}
+      <section className="mb-4 rounded-2xl border border-amber-500/20 bg-slate-950/90 p-4 shadow-lg" aria-label="Cinema Session Manager">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-amber-300"><Film className="h-4 w-4" /> Active Cinema Session</div>
+            <h2 className="mt-1 truncate text-sm font-semibold text-white">{cinemaSession.movieName}</h2>
+            <p className="mt-1 break-all font-mono text-[10px] text-slate-500">{cinemaSession.id}</p>
+          </div>
+          <div className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-right">
+            <p className="text-[10px] uppercase tracking-wider text-slate-500">Session state</p>
+            <p className="text-xs font-bold text-slate-200">{cinemaSession.status.toUpperCase()}</p>
+            <p className="font-mono text-[10px] text-slate-400">{formatSessionTime(cinemaSession.playbackSeconds)} / {formatSessionTime(cinemaSession.durationSeconds)}</p>
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Playback</p><p className="mt-1 text-xs font-semibold text-emerald-300">{sessionStatus === 'ready' ? 'Video ready' : sessionStatus === 'error' ? 'Playback error' : 'Preparing'}</p></div>
+          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Gemini setup</p><p className="mt-1 text-xs font-semibold text-slate-200">{aiSetupStatus === 'checking' ? 'Checking…' : aiSetupStatus === 'configured' ? 'API key configured' : aiSetupStatus === 'missing' ? 'API key missing' : 'Server unreachable'}</p></div>
+          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">AI endpoints</p><p className="mt-1 text-xs font-semibold text-slate-200">{aiSetupStatus === 'checking' || aiSetupStatus === 'unreachable' ? 'Not verified' : `${aiEndpointCount} registered`}</p></div>
+          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Cloud sync</p><p className="mt-1 text-xs font-semibold text-slate-200">{currentUser ? 'Authenticated' : 'Not connected'}</p></div>
+        </div>
+        <p className="mt-3 text-[10px] leading-4 text-slate-500">AI endpoint registration is not proof of full movie analysis. Local playback remains independent of Gemini and cloud availability.</p>
+      </section>
       {/* Top Status & Sync Banner */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900/80 rounded-2xl border border-slate-800">
         <div className="flex items-center gap-2 overflow-x-auto">
@@ -1722,13 +1777,19 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
               src={activeVideoUrl}
               key={activeVideoUrl}
               onTimeUpdate={handleTimeUpdate}
+              onPlay={() => { setIsPlaying(true); updateSession({ status: 'playing' }); }}
+              onPause={() => { setIsPlaying(false); updateSession({ status: videoRef.current?.ended ? 'ended' : 'paused' }); }}
               preload="metadata"
               onLoadStart={() => {
                 setSessionStatus('loading');
                 setSessionError(null);
               }}
               onLoadedMetadata={() => {
-                if (videoRef.current) setDuration(videoRef.current.duration || 35);
+                if (videoRef.current) {
+                  const actualDuration = Number.isFinite(videoRef.current.duration) ? videoRef.current.duration : 0;
+                  setDuration(actualDuration || 35);
+                  updateSession({ durationSeconds: actualDuration });
+                }
               }}
               onProgress={() => {
                 const video = videoRef.current;
@@ -1736,14 +1797,16 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
                 const end = video.buffered.end(video.buffered.length - 1);
                 setBufferedPercent(Math.min(100, (end / video.duration) * 100));
               }}
-              onCanPlay={() => setSessionStatus('ready')}
+              onCanPlay={() => { setSessionStatus('ready'); updateSession({ status: 'ready' }); }}
               onError={() => {
                 setSessionStatus('error');
                 setSessionError('This video source could not be loaded. Choose another movie or check the video URL.');
                 setIsPlaying(false);
+                updateSession({ status: 'error' });
               }}
               onEnded={() => {
                 setIsPlaying(false);
+                updateSession({ status: 'ended' });
                 syncProgressToCloud();
               }}
               className={`w-full h-full object-cover pointer-events-none transition-opacity duration-200 ${isAudioOnly ? 'opacity-0' : 'opacity-100'}`}
