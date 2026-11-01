@@ -1657,6 +1657,7 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
         <SemanticSceneSearchBar
           currentMovie={currentMovie}
           currentTime={currentTime}
+          enabled={!localVideoName}
           onJumpToTime={(seconds) => {
             if (videoRef.current) {
               videoRef.current.currentTime = seconds;
