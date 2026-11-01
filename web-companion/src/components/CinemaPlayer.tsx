@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createCinemaSession, updateCinemaSession, formatSessionTime, CinemaSession } from '../lib/cinema-session';
-import { createCinemaSession, updateCinemaSession, formatSessionTime, CinemaSession } from '../lib/cinema-session';
 import { 
   Play, Pause, RotateCcw, Volume2, VolumeX, Sparkles, Sliders, Eye, 
   HelpCircle, Radio, Info, Sun, Check, ChevronRight, MessageSquare,
@@ -52,32 +51,6 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
   );
   const [aiSetupStatus, setAiSetupStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [aiEndpointCount, setAiEndpointCount] = useState(0);
-
-  // Each selected movie gets a fresh, identifiable Cinema Session.
-  useEffect(() => {
-    setCinemaSession(createCinemaSession(localVideoName || currentMovie.titleEnglish, localVideoName ? 'local-file' : 'sample'));
-  }, [localVideoName, currentMovie.id]);
-
-  // Check backend and Gemini configuration without exposing credentials.
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/session/capabilities')
-      .then(async response => {
-        if (!response.ok) throw new Error('Capability check failed');
-        return response.json();
-      })
-      .then(data => {
-        if (cancelled) return;
-        setAiSetupStatus(data?.gemini?.configured ? 'configured' : 'missing');
-        setAiEndpointCount(data?.endpoints ? Object.values(data.endpoints).filter(Boolean).length : 0);
-      })
-      .catch(() => { if (!cancelled) setAiSetupStatus('unreachable'); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const updateSession = (patch: Partial<Pick<CinemaSession, 'status' | 'playbackSeconds' | 'durationSeconds'>>) => {
-    setCinemaSession(previous => updateCinemaSession(previous, patch));
-  };
 
   const handleLocalVideoSelect = (file: File) => {
     if (!file.type.startsWith('video/') && !/\.(mkv|avi|mov|webm|mp4|m4v)$/i.test(file.name)) {
