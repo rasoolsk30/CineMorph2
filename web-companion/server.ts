@@ -48,6 +48,26 @@ app.get('/api/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', service: 'cinemorph-ai', timestamp: new Date().toISOString() });
 });
 
+// Reports AI configuration without exposing secrets.
+app.get('/api/session/capabilities', (_req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    server: 'online',
+    gemini: { configured: Boolean(process.env.GEMINI_API_KEY), model: 'gemini-2.5-flash' },
+    endpoints: {
+      transcreate: true,
+      translateSubtitles: true,
+      searchScene: true,
+      explainScene: true,
+      sceneInsight: true,
+      recalibrateSubtitles: true,
+      wordDefinition: true,
+      smartSceneSummary: true,
+    },
+    note: 'Registered endpoints do not guarantee full movie-media analysis or runtime availability.'
+  });
+});
+
 // Initialize Gemini SDK with telemetry header
 const getAIClient = () => {
   const apiKey = process.env.GEMINI_API_KEY;
