@@ -1,9 +1,9 @@
 import React from 'react';
-import { Film, Smartphone, Play } from 'lucide-react';
+import { Film, Smartphone, Play, Archive } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'player' | 'masterplan' | 'ai-lab' | 'architecture';
-  setActiveTab: (tab: 'player' | 'masterplan' | 'ai-lab' | 'architecture') => void;
+  activeTab: 'player' | 'vault' | 'masterplan' | 'ai-lab' | 'architecture';
+  setActiveTab: (tab: 'player' | 'vault' | 'masterplan' | 'ai-lab' | 'architecture') => void;
   isMobilePreview: boolean;
   setIsMobilePreview: (val: boolean) => void;
   onLaunchCinema: () => void;
@@ -48,6 +48,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             {activeTab === 'player' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400 rounded-full" />
             )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('vault')}
+            className={`whitespace-nowrap shrink-0 transition-colors py-1 relative ${activeTab === 'vault' ? 'text-amber-400 font-semibold' : 'text-slate-400 hover:text-white'}`}
+          >
+            My Videos / Vault
+            {activeTab === 'vault' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400 rounded-full" />}
           </button>
 
           <button
