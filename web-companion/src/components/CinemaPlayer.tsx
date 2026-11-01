@@ -50,7 +50,6 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
     createCinemaSession(initialLocalFile?.name || currentMovie.titleEnglish, initialLocalFile ? 'local-file' : 'sample')
   );
   const [aiSetupStatus, setAiSetupStatus] = useState<'checking' | 'online' | 'offline'>('checking');
-  const [aiEndpointCount, setAiEndpointCount] = useState(0);
 
   const handleLocalVideoSelect = (file: File) => {
     if (!file.type.startsWith('video/') && !/\.(mkv|avi|mov|webm|mp4|m4v)$/i.test(file.name)) {
@@ -95,7 +94,6 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
       .then(() => {
         if (!cancelled) {
           setAiSetupStatus('online');
-          setAiEndpointCount(8);
         }
       })
       .catch(() => { if (!cancelled) setAiSetupStatus('offline'); });
@@ -1305,11 +1303,11 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Playback</p><p className="mt-1 text-xs font-semibold text-emerald-300">{sessionStatus === 'ready' ? 'Video ready' : sessionStatus === 'error' ? 'Playback error' : 'Preparing'}</p></div>
-          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Gemini setup</p><p className="mt-1 text-xs font-semibold text-slate-200">{aiSetupStatus === 'checking' ? 'Checking…' : aiSetupStatus === 'online' ? 'Server reachable' : 'Server unreachable'}</p></div>
-          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">AI endpoints</p><p className="mt-1 text-xs font-semibold text-slate-200">{aiSetupStatus === 'checking' ? 'Checking…' : aiSetupStatus === 'online' ? `${aiEndpointCount} backend routes` : 'Unavailable'}</p></div>
+          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">AI backend</p><p className="mt-1 text-xs font-semibold text-slate-200">{aiSetupStatus === 'checking' ? 'Checking…' : aiSetupStatus === 'online' ? 'Server reachable' : 'Server unreachable'}</p></div>
+          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Gemini credentials</p><p className="mt-1 text-xs font-semibold text-slate-200">Not verified</p></div>
           <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Cloud sync</p><p className="mt-1 text-xs font-semibold text-slate-200">{currentUser ? 'Authenticated' : 'Not connected'}</p></div>
         </div>
-        <p className="mt-3 text-[10px] leading-4 text-slate-500">AI endpoint registration is not proof of full movie analysis. Local playback remains independent of Gemini and cloud availability.</p>
+        <p className="mt-3 text-[10px] leading-4 text-slate-500">Server health does not verify Gemini credentials or actual movie analysis. Local playback remains independent of AI and cloud availability.</p>
       </section>
       {/* Top Status & Sync Banner */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900/80 rounded-2xl border border-slate-800">
