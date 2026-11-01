@@ -52,11 +52,6 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
   );
   const [aiSetupStatus, setAiSetupStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [aiEndpointCount, setAiEndpointCount] = useState(0);
-  const [cinemaSession, setCinemaSession] = useState<CinemaSession>(() =>
-    createCinemaSession(initialLocalFile?.name || currentMovie.titleEnglish, initialLocalFile ? 'local-file' : 'sample')
-  );
-  const [aiSetupStatus, setAiSetupStatus] = useState<'checking' | 'configured' | 'missing' | 'unreachable'>('checking');
-  const [aiEndpointCount, setAiEndpointCount] = useState(0);
 
   // Each selected movie gets a fresh, identifiable Cinema Session.
   useEffect(() => {
@@ -1337,8 +1332,8 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Playback</p><p className="mt-1 text-xs font-semibold text-emerald-300">{sessionStatus === 'ready' ? 'Video ready' : sessionStatus === 'error' ? 'Playback error' : 'Preparing'}</p></div>
-          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Gemini setup</p><p className="mt-1 text-xs font-semibold text-slate-200">{aiSetupStatus === 'checking' ? 'Checking…' : aiSetupStatus === 'configured' ? 'API key configured' : aiSetupStatus === 'missing' ? 'API key missing' : 'Server unreachable'}</p></div>
-          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">AI endpoints</p><p className="mt-1 text-xs font-semibold text-slate-200">{aiSetupStatus === 'checking' || aiSetupStatus === 'unreachable' ? 'Not verified' : `${aiEndpointCount} registered`}</p></div>
+          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Gemini setup</p><p className="mt-1 text-xs font-semibold text-slate-200">{aiSetupStatus === 'checking' ? 'Checking…' : aiSetupStatus === 'online' ? 'Server reachable' : 'Server unreachable'}</p></div>
+          <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">AI endpoints</p><p className="mt-1 text-xs font-semibold text-slate-200">{aiSetupStatus === 'checking' ? 'Checking…' : aiSetupStatus === 'online' ? `${aiEndpointCount} backend routes` : 'Unavailable'}</p></div>
           <div className="rounded-lg bg-slate-900 px-3 py-2"><p className="text-[10px] text-slate-500">Cloud sync</p><p className="mt-1 text-xs font-semibold text-slate-200">{currentUser ? 'Authenticated' : 'Not connected'}</p></div>
         </div>
         <p className="mt-3 text-[10px] leading-4 text-slate-500">AI endpoint registration is not proof of full movie analysis. Local playback remains independent of Gemini and cloud availability.</p>
