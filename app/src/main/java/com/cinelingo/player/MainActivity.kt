@@ -347,7 +347,7 @@ class MainActivity : AppCompatActivity() {
             text = "Move to Bin"; isAllCaps = false; textSize = 10f
             setOnClickListener { requestBulkMediaAction(trash = true) }
         }
-        selectionBar.addView(trash, LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginStart = dp(5), marginEnd = dp(5) })
+        selectionBar.addView(trash, LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginStart = dp(5); marginEnd = dp(5) })
         val delete = Button(this).apply {
             text = "Delete"; isAllCaps = false; textSize = 10f
             setOnClickListener { requestBulkMediaAction(trash = false) }
