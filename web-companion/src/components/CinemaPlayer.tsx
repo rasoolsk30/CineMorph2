@@ -50,6 +50,11 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
   const [cinemaSession, setCinemaSession] = useState<CinemaSession>(() =>
     createCinemaSession(initialLocalFile?.name || currentMovie.titleEnglish, initialLocalFile ? 'local-file' : 'sample')
   );
+  const [aiSetupStatus, setAiSetupStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [aiEndpointCount, setAiEndpointCount] = useState(0);
+  const [cinemaSession, setCinemaSession] = useState<CinemaSession>(() =>
+    createCinemaSession(initialLocalFile?.name || currentMovie.titleEnglish, initialLocalFile ? 'local-file' : 'sample')
+  );
   const [aiSetupStatus, setAiSetupStatus] = useState<'checking' | 'configured' | 'missing' | 'unreachable'>('checking');
   const [aiEndpointCount, setAiEndpointCount] = useState(0);
 
