@@ -6,6 +6,7 @@ interface SemanticSceneSearchBarProps {
   currentMovie: MovieScene;
   currentTime: number;
   onJumpToTime: (seconds: number) => void;
+  enabled?: boolean;
 }
 
 interface SearchMatchData {
@@ -24,6 +25,7 @@ export const SemanticSceneSearchBar: React.FC<SemanticSceneSearchBarProps> = ({
   currentMovie,
   currentTime,
   onJumpToTime,
+  enabled = true,
 }) => {
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -31,86 +33,29 @@ export const SemanticSceneSearchBar: React.FC<SemanticSceneSearchBarProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Quick contextual prompts based on cinema tropes and movie data
-  const samplePrompts = [
-    'Confrontation standoff in the rain',
-    'Detective Vikram enters the scene',
-    'Secret code & encrypted key reveal',
-    'Villain makes desperate plea',
-    'Climax breaking point'
-  ];
-
+  // Search only the dialogue timeline actually supplied to this component.
+  // Local files are disabled until their own subtitle track has been loaded.
   const handleSearch = async (searchQuery: string) => {
     const q = searchQuery.trim();
-    if (!q) return;
-    setIsSearching(true);
-    setErrorMessage(null);
-    setIsOpen(true);
-
+    if (!q || !enabled) return;
+    const cues = currentMovie.dialogues.map(line => ({
+      startMs: Math.max(0, Math.round(line.startTime * 1000)),
+      text: [line.speaker, line.originalText, line.englishLiteral, line.teluguColloquial].filter(Boolean).join(' — ').slice(0, 500),
+    })).filter(cue => cue.text.trim());
+    if (!cues.length) { setSearchResult(null); setErrorMessage('ఈ సినిమాకు ఉపయోగించగల subtitle/dialogue timeline లేదు.'); setIsOpen(true); return; }
+    setIsSearching(true); setErrorMessage(null); setSearchResult(null); setIsOpen(true);
     try {
-      // Prepare movie scenes and dialogues context for Gemini semantic matching
-      const sceneData = [
-        {
-          index: 0,
-          title: "Introduction & Perimeter Breach",
-          timestamp: 2,
-          characters: ["Vikram", "Officer Rao"],
-          synopsis: "Vikram breaches the perimeter in the rain without triggering the harbor alarm.",
-          dialogueSnippet: currentMovie.dialogues[0]?.englishLiteral || "We have thirty seconds before surveillance sweeps."
-        },
-        {
-          index: 1,
-          title: "The Rain Alley Standoff",
-          timestamp: 14,
-          characters: ["Vikram", "Arjun", "Adversary"],
-          synopsis: "Direct confrontation under flickering streetlamps; Arjun stalls while hiding the decrypted drive.",
-          dialogueSnippet: currentMovie.dialogues[1]?.englishLiteral || "You think you can walk away from this?"
-        },
-        {
-          index: 2,
-          title: "Emotional Breaking Point & Ultimatum",
-          timestamp: 25,
-          characters: ["Arjun", "The Informant"],
-          synopsis: "High stakes confession as sirens echo in the background and loyalties fracture.",
-          dialogueSnippet: currentMovie.dialogues[2]?.englishLiteral || "If I reveal the password, my family dies tonight."
-        }
-      ];
-
-      const res = await fetch('/api/ai/semantic-scene-search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: q,
-          movieTitle: currentMovie.titleEnglish,
-          scenes: sceneData
-        })
-      });
-
+      const res = await fetch('/api/ai/search-scene', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: q, movieTitle: currentMovie.titleEnglish, cues }) });
       const json = await res.json();
-      if (json.success && json.data) {
-        setSearchResult(json.data);
-      } else {
-        throw new Error(json.error || 'Failed to match scene');
-      }
-    } catch (err: any) {
-      console.warn('Semantic search notice:', err);
-      // Fallback heuristic result
-      setSearchResult({
-        matchedSceneIndex: 1,
-        timestamp: 14.5,
-        formattedTimestamp: "00:14",
-        sceneTitle: "The Rain Alley Standoff",
-        matchType: "action_beat",
-        characterIntroductions: ["Vikram", "Arjun"],
-        relevanceScore: 92,
-        matchExplanation: `Matched closest scene moment based on narrative query "${q}".`,
-        keyDialogue: currentMovie.dialogues[1]?.teluguColloquial || "ఇక్కడే తేలిపోవాలి అంతా!"
-      });
-    } finally {
-      setIsSearching(false);
-    }
+      if (!res.ok || !json.success || !json.data) throw new Error(json.error || 'No matching subtitle cue was found.');
+      const match = json.data;
+      const seconds = Number(match.startMs) / 1000;
+      if (!Number.isFinite(seconds) || seconds < 0) throw new Error('Backend returned an invalid timestamp.');
+      const matchedLine = currentMovie.dialogues.find(line => Math.round(line.startTime * 1000) === Number(match.startMs));
+      setSearchResult({ matchedSceneIndex: -1, timestamp: seconds, formattedTimestamp: new Date(seconds * 1000).toISOString().slice(14, 19), sceneTitle: matchedLine ? matchedLine.speaker : 'Subtitle match', matchType: match.method || 'subtitle-match', characterIntroductions: matchedLine?.speaker ? [matchedLine.speaker] : [], relevanceScore: Math.round(Math.max(0, Math.min(1, Number(match.confidence) || 0)) * 100), matchExplanation: match.reason || 'Matched against the supplied subtitle timeline.', keyDialogue: match.matchedText || '' });
+    } catch (err: any) { setErrorMessage(err?.message || 'Scene search failed. No result was generated.'); }
+    finally { setIsSearching(false); }
   };
-
   const handleJump = (seconds: number) => {
     onJumpToTime(seconds);
     setIsOpen(false);
@@ -134,7 +79,7 @@ export const SemanticSceneSearchBar: React.FC<SemanticSceneSearchBarProps> = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          placeholder="Semantic Scene & Character Search (e.g., 'when does Vikram pull out the key', 'rain confrontation')..."
+          placeholder={enabled ? 'Search within available movie subtitles...' : 'Load this local movie’s subtitle file to enable scene search'}
           className="w-full pl-10 pr-24 py-2 bg-slate-900/90 hover:bg-slate-900 focus:bg-slate-950 border border-slate-700/80 focus:border-amber-400/80 rounded-xl text-xs text-slate-100 placeholder:text-slate-500 shadow-inner focus:outline-none transition-all font-sans"
         />
         <div className="absolute right-2 flex items-center gap-1.5">
@@ -152,7 +97,7 @@ export const SemanticSceneSearchBar: React.FC<SemanticSceneSearchBarProps> = ({
           )}
           <button
             type="submit"
-            disabled={isSearching || !query.trim()}
+            disabled={!enabled || isSearching || !query.trim()}
             className="px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 disabled:opacity-40 text-slate-950 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 transition-all"
           >
             {isSearching ? (
@@ -165,26 +110,14 @@ export const SemanticSceneSearchBar: React.FC<SemanticSceneSearchBarProps> = ({
         </div>
       </form>
 
-      {/* Suggested Quick Prompts */}
-      <div className="flex items-center gap-1.5 mt-2 overflow-x-auto pb-1 text-[11px] scrollbar-none">
-        <span className="text-slate-500 text-[10px] uppercase font-bold shrink-0 font-mono-num">
-          AI Quick Jump:
-        </span>
-        {samplePrompts.map((prompt) => (
-          <button
-            key={prompt}
-            onClick={() => {
-              setQuery(prompt);
-              handleSearch(prompt);
-            }}
-            className="px-2.5 py-1 bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-slate-700 rounded-lg whitespace-nowrap transition-colors flex items-center gap-1 text-[11px]"
-          >
-            <Zap className="w-2.5 h-2.5 text-amber-400" />
-            <span>{prompt}</span>
-          </button>
-        ))}
-      </div>
-
+      {!enabled && (
+        <p className="mt-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-200">
+          Local movie కోసం ముందుగా దాని స్వంత subtitle file load చేయాలి. Sample movie dialogue ను local movie analysis గా ఉపయోగించము.
+        </p>
+      )}
+      {errorMessage && (
+        <p role="alert" className="mt-2 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-[11px] text-red-200">{errorMessage}</p>
+      )}
       {/* Search Result Card Dropdown */}
       {isOpen && (searchResult || isSearching) && (
         <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-slate-950/95 backdrop-blur-xl border border-amber-500/40 rounded-2xl shadow-2xl p-4 animate-scale-in">
