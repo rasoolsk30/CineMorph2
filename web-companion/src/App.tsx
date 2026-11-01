@@ -55,9 +55,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'player' | 'masterplan' | 'ai-lab' | 'architecture'>('player');
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const [isCinemaLaunched, setIsCinemaLaunched] = useState(false);
+  const [selectedLocalMovie, setSelectedLocalMovie] = useState<File | null>(null);
 
   const launchCinema = () => {
     setActiveTab('player');
+    if (!selectedLocalMovie) {
+      setIsCinemaLaunched(false);
+      return;
+    }
     setIsCinemaLaunched(true);
     window.setTimeout(() => {
       document.getElementById('cinemorph-player')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -75,15 +80,26 @@ export default function App() {
         <p className="mx-auto mt-5 max-w-2xl text-sm sm:text-base leading-7 text-slate-400">
           Launch the cinema workspace, choose a movie, and configure playback, audio, subtitles and available AI tools in one place.
         </p>
+        <label className="mx-auto mt-7 flex max-w-xl cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-slate-600 bg-slate-900/70 px-5 py-5 text-sm text-slate-200 transition hover:border-amber-400 hover:bg-slate-900">
+          <span className="font-semibold">{selectedLocalMovie ? 'Selected movie' : 'Choose a local movie'}</span>
+          <span className="max-w-full truncate text-xs text-slate-400">{selectedLocalMovie ? selectedLocalMovie.name : 'Select a video file from this device · no upload'}</span>
+          <input
+            type="file"
+            accept="video/*,.mkv,.avi,.mov,.webm,.mp4,.m4v"
+            className="sr-only"
+            onChange={event => setSelectedLocalMovie(event.target.files?.[0] || null)}
+          />
+        </label>
         <button
           type="button"
           onClick={launchCinema}
+          disabled={!selectedLocalMovie}
           className="mt-8 inline-flex items-center gap-3 rounded-xl bg-amber-400 px-7 py-4 text-sm font-extrabold text-slate-950 shadow-lg transition hover:bg-amber-300 active:scale-[0.98]"
         >
           <Play className="h-5 w-5 fill-current" />
-          Launch Cinema Workspace
+          Launch Cinema
         </button>
-        <p className="mt-5 text-xs text-slate-500">Local player workspace opens first. Cloud and AI tools remain feature-dependent.</p>
+        <p className="mt-5 text-xs text-slate-500">The selected movie stays on this device. Launch starts its local playback session; AI and cloud services report their own availability.</p>
       </div>
     </section>
   );
@@ -105,7 +121,7 @@ export default function App() {
               <div className="w-32 h-4 bg-slate-800 rounded-full mx-auto mb-3 shrink-0" />
               <div className="flex-1 overflow-y-auto pb-20">
                 {activeTab === 'player' && !isCinemaLaunched && renderLaunchScreen()}
-                {activeTab === 'player' && isCinemaLaunched && <CinemaPlayer />}
+                {activeTab === 'player' && isCinemaLaunched && <CinemaPlayer initialLocalFile={selectedLocalMovie} />}
                 {activeTab === 'masterplan' && <MarketMasterplan />}
                 {activeTab === 'ai-lab' && <AiStudioPlayground />}
                 {activeTab === 'architecture' && <ArchitectureView />}
