@@ -9,6 +9,7 @@ import { CinemaPlayer } from './components/CinemaPlayer';
 import { MarketMasterplan } from './components/MarketMasterplan';
 import { AiStudioPlayground } from './components/AiStudioPlayground';
 import { ArchitectureView } from './components/ArchitectureView';
+import { LocalVideoVault } from './components/LocalVideoVault';
 import { Play, Sparkles, BookOpen, Cpu, Film } from 'lucide-react';
 
 class AppErrorBoundary extends React.Component<
@@ -52,7 +53,7 @@ class AppErrorBoundary extends React.Component<
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'player' | 'masterplan' | 'ai-lab' | 'architecture'>('player');
+  const [activeTab, setActiveTab] = useState<'player' | 'vault' | 'masterplan' | 'ai-lab' | 'architecture'>('player');
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const [isCinemaLaunched, setIsCinemaLaunched] = useState(false);
   const [selectedLocalMovie, setSelectedLocalMovie] = useState<File | null>(null);
@@ -67,6 +68,12 @@ export default function App() {
     window.setTimeout(() => {
       document.getElementById('cinemorph-player')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 180);
+  };
+
+  const playVaultFile = (file: File) => {
+    setSelectedLocalMovie(file);
+    setIsCinemaLaunched(true);
+    setActiveTab('player');
   };
 
   const renderLaunchScreen = () => (
@@ -121,6 +128,8 @@ export default function App() {
               <div className="w-32 h-4 bg-slate-800 rounded-full mx-auto mb-3 shrink-0" />
               <div className="flex-1 overflow-y-auto pb-20">
                 {activeTab === 'player' && !isCinemaLaunched && renderLaunchScreen()}
+              {activeTab === 'vault' && <LocalVideoVault onPlayFile={playVaultFile} />}
+                {activeTab === 'vault' && <LocalVideoVault onPlayFile={playVaultFile} />}
                 {activeTab === 'player' && isCinemaLaunched && <CinemaPlayer initialLocalFile={selectedLocalMovie} />}
                 {activeTab === 'masterplan' && <MarketMasterplan />}
                 {activeTab === 'ai-lab' && <AiStudioPlayground />}
