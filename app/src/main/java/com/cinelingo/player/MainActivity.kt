@@ -30,6 +30,9 @@ class MainActivity : AppCompatActivity() {
     private var selectedCategory = "All videos"
     private var selectedFolder: String? = null
     private var sortMode = "Date"
+    private val selectedVideoUris = linkedSetOf<String>()
+    private lateinit var selectionBar: LinearLayout
+    private var selectionMode = false
     private lateinit var permissionPanel: LinearLayout
     private val micPermissionRequest = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         updatePermissionPanel()
@@ -124,7 +127,9 @@ class MainActivity : AppCompatActivity() {
         }
         root.addView(search, LinearLayout.LayoutParams(-1, dp(50)).apply { bottomMargin = dp(12) })
         categoryBar = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
-        root.addView(categoryBar, LinearLayout.LayoutParams(-1, dp(44)).apply { bottomMargin = dp(8) })
+        root.addView(categoryBar, LinearLayout.LayoutParams(-1, dp(44)).apply { bottomMargin = dp(4) })
+        selectionBar = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; visibility = View.GONE }
+        root.addView(selectionBar, LinearLayout.LayoutParams(-1, dp(48)).apply { bottomMargin = dp(6) })
         val scroll = ScrollView(this).apply { isFillViewport = false; clipToPadding = false }
         list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(0, dp(4), 0, dp(12)) }
         scroll.addView(list)
@@ -277,6 +282,7 @@ class MainActivity : AppCompatActivity() {
             else -> filtered.sortedByDescending { it.date }
         }
         count.text = "${filtered.size} videos · Sort: $sortMode"
+        updateSelectionBar(filtered)
         filtered.forEachIndexed { index, video ->
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
@@ -287,6 +293,14 @@ class MainActivity : AppCompatActivity() {
                 text = "▶"; textSize = 22f; gravity = Gravity.CENTER; setTextColor(0xffd9d4ff.toInt())
                 background = rounded(0xff302b59.toInt(), 13); layoutParams = LinearLayout.LayoutParams(dp(54), dp(58))
             }
+            val check = TextView(this).apply {
+                text = if (selectedVideoUris.contains(video.uri.toString())) "☑" else "□"
+                textSize = 20f; gravity = Gravity.CENTER; setTextColor(if (selectedVideoUris.contains(video.uri.toString())) 0xffa99cff.toInt() else 0xff8290aa.toInt())
+                visibility = if (selectionMode) View.VISIBLE else View.GONE
+                layoutParams = LinearLayout.LayoutParams(dp(30), dp(58)).apply { marginEnd = dp(6) }
+                setOnClickListener { if (!selectionMode) selectionMode = true; toggleVideoSelection(video.uri) }
+            }
+            card.addView(check)
             card.addView(poster)
             val details = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), 0, 0, 0); layoutParams = LinearLayout.LayoutParams(0, -2, 1f) }
             details.addView(label(video.name, 14f, Color.WHITE, true))
@@ -299,6 +313,81 @@ class MainActivity : AppCompatActivity() {
             list.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(9) })
         }
         if (filtered.isEmpty()) emptyMessage()
+        updateSelectionBar(filtered)
+    }
+
+    private fun toggleVideoSelection(uri: Uri) {
+        val key = uri.toString()
+        if (!selectedVideoUris.add(key)) selectedVideoUris.remove(key)
+        if (selectedVideoUris.isEmpty()) selectionMode = false
+        renderVideos()
+    }
+
+    private fun updateSelectionBar(filtered: List<Video>) {
+        if (!::selectionBar.isInitialized) return
+        selectionBar.removeAllViews()
+        selectionBar.visibility = if (selectionMode) View.VISIBLE else View.GONE
+        if (!selectionMode) return
+        val visibleUris = filtered.map { it.uri.toString() }
+        val allSelected = visibleUris.isNotEmpty() && visibleUris.all { selectedVideoUris.contains(it) }
+        val selectAll = Button(this).apply {
+            text = if (allSelected) "Unselect all" else "Select all"; isAllCaps = false; textSize = 10f
+            setOnClickListener {
+                if (allSelected) selectedVideoUris.removeAll(visibleUris.toSet()) else selectedVideoUris.addAll(visibleUris)
+                if (selectedVideoUris.isEmpty()) selectionMode = false
+                renderVideos()
+            }
+        }
+        selectionBar.addView(selectAll, LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginEnd = dp(5) })
+        selectionBar.addView(label("${selectedVideoUris.size} selected", 11f, Color.WHITE, true).apply { gravity = Gravity.CENTER }, LinearLayout.LayoutParams(0, -2, 1f))
+        val trash = Button(this).apply {
+            text = "Move to Bin"; isAllCaps = false; textSize = 10f
+            setOnClickListener { requestBulkMediaAction(trash = true) }
+        }
+        selectionBar.addView(trash, LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginStart = dp(5), marginEnd = dp(5) })
+        val delete = Button(this).apply {
+            text = "Delete"; isAllCaps = false; textSize = 10f
+            setOnClickListener { requestBulkMediaAction(trash = false) }
+        }
+        selectionBar.addView(delete, LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginStart = dp(5) })
+    }
+
+    private fun requestBulkMediaAction(trash: Boolean) {
+        val targets = selectedVideoUris.mapNotNull { raw -> videos.firstOrNull { it.uri.toString() == raw }?.uri }
+        if (targets.isEmpty()) { selectionMode = false; renderVideos(); return }
+        val actionName = if (trash) "move to Recycle Bin" else "permanently delete"
+        AlertDialog.Builder(this)
+            .setTitle(if (trash) "Move selected videos to Bin?" else "Delete selected videos permanently?")
+            .setMessage("${targets.size} selected video(s) will be ${actionName}. Android will ask you to approve this action.")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton(if (trash) "Move to Bin" else "Delete") { _, _ -> launchMediaStoreAction(targets, trash) }
+            .show()
+    }
+
+    private fun launchMediaStoreAction(targets: List<Uri>, trash: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val pending = if (trash) MediaStore.createTrashRequest(contentResolver, targets, true)
+                    else MediaStore.createDeleteRequest(contentResolver, targets)
+                startIntentSenderForResult(pending.intentSender, if (trash) 7101 else 7102, null, 0, 0, 0)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Could not start Android media permission: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            Toast.makeText(this, "Bulk recycle requires Android 11 or newer. Use Android's file manager on this device.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 7101 || requestCode == 7102) {
+            if (resultCode == RESULT_OK) Toast.makeText(this, if (requestCode == 7101) "Selected videos moved to Recycle Bin" else "Selected videos permanently deleted", Toast.LENGTH_LONG).show()
+            else Toast.makeText(this, "No files changed", Toast.LENGTH_SHORT).show()
+            selectedVideoUris.clear()
+            selectionMode = false
+            loadVideos()
+        }
     }
 
     private fun showFolderVideos(folder: String) {
