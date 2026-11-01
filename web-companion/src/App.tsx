@@ -148,7 +148,7 @@ export default function App() {
           ) : (
             <div className="w-full max-w-7xl">
               {activeTab === 'player' && !isCinemaLaunched && renderLaunchScreen()}
-              {activeTab === 'player' && isCinemaLaunched && <CinemaPlayer />}
+              {activeTab === 'player' && isCinemaLaunched && <CinemaPlayer initialLocalFile={selectedLocalMovie} />}
               {activeTab === 'masterplan' && <MarketMasterplan />}
               {activeTab === 'ai-lab' && <AiStudioPlayground />}
               {activeTab === 'architecture' && <ArchitectureView />}
