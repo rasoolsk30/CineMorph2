@@ -128,7 +128,6 @@ export default function App() {
               <div className="w-32 h-4 bg-slate-800 rounded-full mx-auto mb-3 shrink-0" />
               <div className="flex-1 overflow-y-auto pb-20">
                 {activeTab === 'player' && !isCinemaLaunched && renderLaunchScreen()}
-              {activeTab === 'vault' && <LocalVideoVault onPlayFile={playVaultFile} />}
                 {activeTab === 'vault' && <LocalVideoVault onPlayFile={playVaultFile} />}
                 {activeTab === 'player' && isCinemaLaunched && <CinemaPlayer initialLocalFile={selectedLocalMovie} />}
                 {activeTab === 'masterplan' && <MarketMasterplan />}
