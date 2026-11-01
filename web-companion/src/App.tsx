@@ -10,7 +10,7 @@ import { MarketMasterplan } from './components/MarketMasterplan';
 import { AiStudioPlayground } from './components/AiStudioPlayground';
 import { ArchitectureView } from './components/ArchitectureView';
 import { LocalVideoVault } from './components/LocalVideoVault';
-import { Play, Sparkles, BookOpen, Cpu, Film } from 'lucide-react';
+import { Play, Sparkles, BookOpen, Cpu, Film, Archive } from 'lucide-react';
 
 class AppErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -139,6 +139,10 @@ export default function App() {
                 <button onClick={launchCinema} className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] ${activeTab === 'player' ? 'text-amber-400' : 'text-slate-400'}`}>
                   <Play className="w-5 h-5 fill-current" />
                   <span className="text-[10px] font-medium mt-1">Player</span>
+                </button>
+                <button onClick={() => setActiveTab('vault')} className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] ${activeTab === 'vault' ? 'text-amber-400' : 'text-slate-400'}`}>
+                  <Archive className="w-5 h-5" />
+                  <span className="text-[10px] font-medium mt-1">Vault</span>
                 </button>
                 <button onClick={() => setActiveTab('masterplan')} className={`flex flex-col items-center justify-center min-h-[44px] min-w-[44px] ${activeTab === 'masterplan' ? 'text-amber-400' : 'text-slate-400'}`}>
                   <BookOpen className="w-5 h-5" />
