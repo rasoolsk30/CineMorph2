@@ -33,7 +33,9 @@ import { SemanticSceneSearchBar } from './SemanticSceneSearchBar';
 import { CoWatchPartyDrawer } from './CoWatchPartyDrawer';
 import { SyncService } from './SyncService';
 
-export const CinemaPlayer: React.FC = () => {
+type CinemaPlayerProps = { initialLocalFile?: File | null };
+
+export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = null }) => {
   const [selectedMovieIndex, setSelectedMovieIndex] = useState(0);
   const [recentMovieIndices, setRecentMovieIndices] = useState<number[]>([]);
   const [isQuickSettingsOpen, setIsQuickSettingsOpen] = useState(false);
@@ -62,6 +64,11 @@ export const CinemaPlayer: React.FC = () => {
     setLocalVideoName(file.name);
     setLocalVideoUrl(URL.createObjectURL(file));
   };
+
+  // The launch screen hands the chosen local file into this player session.
+  useEffect(() => {
+    if (initialLocalFile) handleLocalVideoSelect(initialLocalFile);
+  }, [initialLocalFile]);
 
   useEffect(() => {
     if (!localVideoUrl) return;
