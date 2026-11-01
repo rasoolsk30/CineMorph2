@@ -259,7 +259,10 @@ class MainActivity : AppCompatActivity() {
         if (!::list.isInitialized) return
         list.removeAllViews()
         val query = search.text?.toString()?.trim()?.lowercase(Locale.ROOT).orEmpty()
-        var filtered = videos.filter { it.name.lowercase(Locale.ROOT).contains(query) || it.folder.lowercase(Locale.ROOT).contains(query) }
+        if (selectedFolder != null) {
+            list.addView(Button(this).apply { text = "← All folders"; isAllCaps = false; setOnClickListener { selectedFolder = null; selectedCategory = "Folders"; selectionMode = false; selectedVideoUris.clear(); buildCategories(); renderVideos() } })
+        }
+        var filtered = videos.filter { (selectedFolder == null || it.folder == selectedFolder) && (it.name.lowercase(Locale.ROOT).contains(query) || it.folder.lowercase(Locale.ROOT).contains(query)) }
         when (selectedCategory) {
             "Recent" -> filtered = filtered.sortedByDescending { it.date }.take(30)
             "Large" -> filtered = filtered.sortedByDescending { it.size }
@@ -391,14 +394,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showFolderVideos(folder: String) {
-        list.removeAllViews()
-        val items = videos.filter { it.folder == folder }.sortedByDescending { it.date }
-        count.text = "$folder · ${items.size} videos"
-        list.addView(Button(this).apply { text = "← All videos"; setOnClickListener { selectedCategory = "Folders"; buildCategories(); renderVideos() } })
-        items.forEach { video -> list.addView(TextView(this).apply {
-            text = "▶  ${video.name}\n     ${formatDuration(video.duration)}  ·  ${formatSize(video.size)}"
-            textSize = 15f; setPadding(12, 14, 8, 14); setOnClickListener { openPlayer(video.uri) }
-        }) }
+        selectedFolder = folder
+        selectedCategory = "All videos"
+        renderVideos()
     }
 
     private fun emptyMessage() { list.addView(TextView(this).apply { text = if (videos.isEmpty()) "No videos found. Download or save a video on your phone, then refresh this screen." else "No matching videos."; textSize = 15f; setPadding(8, 24, 8, 24) }) }
