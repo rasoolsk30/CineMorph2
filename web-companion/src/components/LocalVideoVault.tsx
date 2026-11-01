@@ -33,12 +33,17 @@ export const LocalVideoVault: React.FC<{ onPlayFile: (file: File) => void }> = (
   const [tab, setTab] = useState<'vault' | 'bin'>('vault');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'name' | 'largest'>('newest');
   const refresh = async () => {
     try { setEntries(await vaultRequest<VaultEntry[]>('readonly', store => store.getAll())); }
     catch (e: any) { setError(e?.message || 'Could not read local vault.'); }
   };
   useEffect(() => { void refresh(); }, []);
-  const visible = useMemo(() => entries.filter(e => tab === 'vault' ? !e.deletedAt : !!e.deletedAt), [entries, tab]);
+  const visible = useMemo(() => entries
+    .filter(e => tab === 'vault' ? !e.deletedAt : !!e.deletedAt)
+    .filter(e => e.name.toLowerCase().includes(searchText.trim().toLowerCase()))
+    .sort((a, b) => sortBy === 'name' ? a.name.localeCompare(b.name) : sortBy === 'largest' ? b.size - a.size : b.addedAt - a.addedAt), [entries, tab, searchText, sortBy]);
   const allVisibleSelected = visible.length > 0 && visible.every(entry => selectedEntries.includes(entry.id));
   const toggleAllVisible = () => setSelectedEntries(allVisibleSelected ? [] : visible.map(entry => entry.id));
   const toggleEntry = (id: string, checked: boolean) => setSelectedEntries(old => checked ? [...old.filter(x => x !== id), id] : old.filter(x => x !== id));
@@ -91,10 +96,15 @@ export const LocalVideoVault: React.FC<{ onPlayFile: (file: File) => void }> = (
       <label className="cursor-pointer rounded-lg bg-indigo-400 px-3 py-2 text-xs font-bold text-slate-950"><FolderOpen className="mr-1 inline h-3.5 w-3.5" /> Select videos<input className="hidden" type="file" multiple accept="video/*,.mkv,.avi,.mov,.webm,.mp4,.m4v" onChange={e => stageFiles(e.target.files)} /></label>
     </div>
     {staged.length > 0 && <div className="mt-3 rounded-xl border border-slate-800 p-3"><p className="mb-2 text-xs font-semibold text-slate-200">Selected files — tick the videos to add</p>
+      <label className="mb-2 flex cursor-pointer items-center gap-2 text-[11px] font-semibold text-indigo-200"><input type="checkbox" checked={staged.length > 0 && selected.length === staged.length} onChange={e => setSelected(e.target.checked ? staged.map((_, i) => String(i)) : [])} /> Select all staged videos</label>
       {staged.map((f, i) => <label key={i} className="flex items-center gap-2 border-b border-slate-900 py-2 text-xs text-slate-300"><input type="checkbox" checked={selected.includes(String(i))} onChange={e => setSelected(old => e.target.checked ? [...old, String(i)] : old.filter(x => x !== String(i)))} /><span className="min-w-0 flex-1 truncate">{f.name}</span><span className="text-slate-500">{sizeLabel(f.size)}</span></label>)}
       <button disabled={!selected.length || busy} onClick={moveToVault} className="mt-3 rounded-lg bg-amber-400 px-3 py-2 text-xs font-bold text-slate-950 disabled:opacity-40">{busy ? 'Saving…' : 'Move selected to Vault'}</button>
     </div>}
     <div className="mt-4 flex gap-2"><button onClick={() => { setTab('vault'); setSelectedEntries([]); }} className={`rounded-lg px-3 py-2 text-xs font-semibold ${tab === 'vault' ? 'bg-indigo-400 text-slate-950' : 'bg-slate-900 text-slate-300'}`}>Vault ({entries.filter(e => !e.deletedAt).length})</button><button onClick={() => { setTab('bin'); setSelectedEntries([]); }} className={`rounded-lg px-3 py-2 text-xs font-semibold ${tab === 'bin' ? 'bg-indigo-400 text-slate-950' : 'bg-slate-900 text-slate-300'}`}>Recycle Bin ({entries.filter(e => !!e.deletedAt).length})</button></div>
+    <div className="mt-3 flex flex-wrap gap-2">
+      <input value={searchText} onChange={e => setSearchText(e.target.value)} placeholder="Search videos…" className="min-w-0 flex-1 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-white outline-none focus:border-indigo-400" />
+      <select value={sortBy} onChange={e => setSortBy(e.target.value as 'newest' | 'name' | 'largest')} className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-200"><option value="newest">Newest first</option><option value="name">Name A–Z</option><option value="largest">Largest first</option></select>
+    </div>
     {visible.length === 0 ? <p className="py-5 text-center text-xs text-slate-500">{tab === 'vault' ? 'Vault is empty. Select videos above to add them.' : 'Recycle Bin is empty.'}</p> : <>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-900/70 p-2.5">
         <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-200"><input type="checkbox" checked={allVisibleSelected} onChange={toggleAllVisible} /><CheckSquare className="h-4 w-4 text-indigo-300" /> Select all ({visible.length})</label>
