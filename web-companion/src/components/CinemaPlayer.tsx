@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createCinemaSession, updateCinemaSession, formatSessionTime, CinemaSession } from '../lib/cinema-session';
+import { createCinemaSession, updateCinemaSession, formatSessionTime, CinemaSession } from '../lib/cinema-session';
 import { 
   Play, Pause, RotateCcw, Volume2, VolumeX, Sparkles, Sliders, Eye, 
   HelpCircle, Radio, Info, Sun, Check, ChevronRight, MessageSquare,
