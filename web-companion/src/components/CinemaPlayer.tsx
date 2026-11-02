@@ -46,6 +46,9 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
   const [localVideoName, setLocalVideoName] = useState<string | null>(null);
   const currentMovie = MOVIE_SAMPLES[selectedMovieIndex];
   const activeVideoUrl = localVideoUrl || currentMovie.videoUrl;
+  const resumeStorageKey = initialLocalFile
+    ? `cinemorph_resume_local_${encodeURIComponent(initialLocalFile.name)}_${initialLocalFile.size}_${initialLocalFile.lastModified}`
+    : `cinemorph_resume_sample_${currentMovie.id}`;
   const [cinemaSession, setCinemaSession] = useState<CinemaSession>(() =>
     createCinemaSession(initialLocalFile?.name || currentMovie.titleEnglish, initialLocalFile ? 'local-file' : 'sample')
   );
@@ -179,6 +182,17 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
 
   // Video Player Ref & State
   const videoRef = useRef<HTMLVideoElement>(null);
+  const restoredResumeKeyRef = useRef<string | null>(null);
+  const lastResumeSaveRef = useRef(0);
+  const persistResumePosition = (seconds: number) => {
+    if (!Number.isFinite(seconds) || seconds < 0) return;
+    try {
+      localStorage.setItem(resumeStorageKey, JSON.stringify({ seconds, updatedAt: Date.now() }));
+      lastResumeSaveRef.current = seconds;
+    } catch (error) {
+      console.warn('Playback position could not be saved:', error);
+    }
+  };
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -779,6 +793,7 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
       return;
     }
     setCurrentTime(time);
+    if (Math.abs(time - lastResumeSaveRef.current) >= 5) persistResumePosition(time);
     updateSession({ playbackSeconds: time, status: videoRef.current.paused ? 'paused' : 'playing' });
     if (studioRecorderRef.current?.state === 'recording' && time >= studioEnd) {
       videoRef.current.pause();
@@ -1776,7 +1791,7 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
               key={activeVideoUrl}
               onTimeUpdate={handleTimeUpdate}
               onPlay={() => { setIsPlaying(true); updateSession({ status: 'playing' }); }}
-              onPause={() => { setIsPlaying(false); updateSession({ status: videoRef.current?.ended ? 'ended' : 'paused' }); }}
+              onPause={() => { setIsPlaying(false); if (videoRef.current) persistResumePosition(videoRef.current.currentTime); updateSession({ status: videoRef.current?.ended ? 'ended' : 'paused' }); }}
               preload="metadata"
               onLoadStart={() => {
                 setSessionStatus('loading');
@@ -1784,9 +1799,25 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
               }}
               onLoadedMetadata={() => {
                 if (videoRef.current) {
-                  const actualDuration = Number.isFinite(videoRef.current.duration) ? videoRef.current.duration : 0;
+                  const video = videoRef.current;
+                  const actualDuration = Number.isFinite(video.duration) ? video.duration : 0;
                   setDuration(actualDuration || 35);
                   updateSession({ durationSeconds: actualDuration });
+                  if (restoredResumeKeyRef.current !== resumeStorageKey) {
+                    restoredResumeKeyRef.current = resumeStorageKey;
+                    try {
+                      const saved = JSON.parse(localStorage.getItem(resumeStorageKey) || 'null');
+                      const savedSeconds = Number(saved?.seconds);
+                      if (Number.isFinite(savedSeconds) && savedSeconds > 0 && (!actualDuration || savedSeconds < actualDuration - 2)) {
+                        video.currentTime = savedSeconds;
+                        setCurrentTime(savedSeconds);
+                        updateSession({ playbackSeconds: savedSeconds });
+                        lastResumeSaveRef.current = savedSeconds;
+                      }
+                    } catch (error) {
+                      console.warn('Saved playback position could not be restored:', error);
+                    }
+                  }
                 }
               }}
               onProgress={() => {
@@ -1804,7 +1835,8 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
               }}
               onEnded={() => {
                 setIsPlaying(false);
-                updateSession({ status: 'ended' });
+                persistResumePosition(0);
+                updateSession({ status: 'ended', playbackSeconds: 0 });
                 syncProgressToCloud();
               }}
               className={`w-full h-full object-cover pointer-events-none transition-opacity duration-200 ${isAudioOnly ? 'opacity-0' : 'opacity-100'}`}
