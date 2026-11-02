@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Archive, Trash2, RotateCcw, Play, FolderOpen, ShieldAlert, CheckSquare } from 'lucide-react';
 
-type VaultEntry = { id: string; name: string; type: string; size: number; blob: Blob; deletedAt: number | null; addedAt: number };
+type VaultEntry = { id: string; name: string; type: string; size: number; blob: Blob; lastModified?: number; deletedAt: number | null; addedAt: number };
 const DB_NAME = 'cinemorph-local-vault';
 const STORE = 'videos';
 function openVaultDb(): Promise<IDBDatabase> {
@@ -93,7 +93,7 @@ export const LocalVideoVault: React.FC<{ onPlayFile: (file: File) => void }> = (
     try {
       for (const id of selected) {
         const file = staged[Number(id)];
-        if (file) await vaultRequest<IDBValidKey>('readwrite', store => store.put({ id: makeId(), name: file.name, type: file.type, size: file.size, blob: file, deletedAt: null, addedAt: Date.now() } satisfies VaultEntry));
+        if (file) await vaultRequest<IDBValidKey>('readwrite', store => store.put({ id: makeId(), name: file.name, type: file.type, size: file.size, blob: file, lastModified: file.lastModified, deletedAt: null, addedAt: Date.now() } satisfies VaultEntry));
       }
       setStaged([]); setSelected([]); await refresh();
     } catch (e: any) { setError(e?.name === 'QuotaExceededError' ? 'Device storage is full. Free space and try again.' : e?.message || 'Could not save videos to vault.'); }
@@ -111,7 +111,7 @@ export const LocalVideoVault: React.FC<{ onPlayFile: (file: File) => void }> = (
     if (!window.confirm('Permanently delete this video from the CineMorph Vault? This cannot be undone.')) return;
     await runSingleAction(() => vaultRequest('readwrite', store => store.delete(entry.id)));
   };
-  const play = (entry: VaultEntry) => onPlayFile(new File([entry.blob], entry.name, { type: entry.type || 'video/mp4' }));
+  const play = (entry: VaultEntry) => onPlayFile(new File([entry.blob], entry.name, { type: entry.type || 'video/mp4', lastModified: entry.lastModified || entry.addedAt }));
   const sizeLabel = (bytes: number) => bytes >= 1024 ** 3 ? (bytes / 1024 ** 3).toFixed(2) + ' GB' : (bytes / 1024 ** 2).toFixed(1) + ' MB';
 
   return <section className="mb-5 rounded-2xl border border-indigo-500/25 bg-slate-950/80 p-4">
