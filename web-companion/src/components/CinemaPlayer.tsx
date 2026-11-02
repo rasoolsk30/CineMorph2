@@ -44,11 +44,14 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [localVideoUrl, setLocalVideoUrl] = useState<string | null>(null);
   const [localVideoName, setLocalVideoName] = useState<string | null>(null);
+  const [localVideoLastModified, setLocalVideoLastModified] = useState<number | null>(null);
   const currentMovie = MOVIE_SAMPLES[selectedMovieIndex];
   const activeVideoUrl = localVideoUrl || currentMovie.videoUrl;
-  const resumeStorageKey = initialLocalFile
-    ? `cinemorph_resume_local_${encodeURIComponent(initialLocalFile.name)}_${initialLocalFile.size}_${initialLocalFile.lastModified}`
-    : `cinemorph_resume_sample_${currentMovie.id}`;
+  const resumeStorageKey = localVideoName
+    ? `cinemorph_resume_local_${encodeURIComponent(localVideoName)}_${localVideoLastModified ?? 0}`
+    : initialLocalFile
+      ? `cinemorph_resume_local_${encodeURIComponent(initialLocalFile.name)}_${initialLocalFile.lastModified}`
+      : `cinemorph_resume_sample_${currentMovie.id}`;
   const [cinemaSession, setCinemaSession] = useState<CinemaSession>(() =>
     createCinemaSession(initialLocalFile?.name || currentMovie.titleEnglish, initialLocalFile ? 'local-file' : 'sample')
   );
@@ -70,6 +73,7 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
     setSessionStatus('loading');
     setSessionError(null);
     setLocalVideoName(file.name);
+    setLocalVideoLastModified(file.lastModified);
     setLocalVideoUrl(URL.createObjectURL(file));
   };
 
@@ -145,6 +149,7 @@ export const CinemaPlayer: React.FC<CinemaPlayerProps> = ({ initialLocalFile = n
     setSessionError(null);
     setLocalVideoUrl(null);
     setLocalVideoName(null);
+    setLocalVideoLastModified(null);
     setSelectedMovieIndex(index);
     rememberRecentMovie(index);
     setIsQuickSettingsOpen(false);
