@@ -7,7 +7,7 @@ const STORE = 'videos';
 function openVaultDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(STORE, { keyPath: 'id' });
+    request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains(STORE)) request.result.createObjectStore(STORE, { keyPath: 'id' }); };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error || new Error('Vault storage unavailable'));
   });
@@ -15,12 +15,30 @@ function openVaultDb(): Promise<IDBDatabase> {
 async function vaultRequest<T>(mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
   const db = await openVaultDb();
   return new Promise((resolve, reject) => {
+    let result: T;
+    let settled = false;
     const tx = db.transaction(STORE, mode);
     const req = action(tx.objectStore(STORE));
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error || new Error('Vault operation failed'));
-    tx.oncomplete = () => db.close();
-    tx.onerror = () => reject(tx.error || new Error('Vault transaction failed'));
+    req.onsuccess = () => { result = req.result; };
+    req.onerror = () => {
+      if (!settled) {
+        settled = true;
+        db.close();
+        reject(req.error || new Error('Vault operation failed'));
+      }
+    };
+    tx.oncomplete = () => {
+      db.close();
+      if (!settled) { settled = true; resolve(result); }
+    };
+    tx.onabort = () => {
+      db.close();
+      if (!settled) { settled = true; reject(tx.error || new Error('Vault transaction was aborted')); }
+    };
+    tx.onerror = () => {
+      db.close();
+      if (!settled) { settled = true; reject(tx.error || new Error('Vault transaction failed')); }
+    };
   });
 }
 const makeId = () => typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()) + Math.random();
@@ -81,24 +99,30 @@ export const LocalVideoVault: React.FC<{ onPlayFile: (file: File) => void }> = (
     } catch (e: any) { setError(e?.name === 'QuotaExceededError' ? 'Device storage is full. Free space and try again.' : e?.message || 'Could not save videos to vault.'); }
     finally { setBusy(false); }
   };
-  const softDelete = async (entry: VaultEntry) => { await vaultRequest('readwrite', store => store.put({ ...entry, deletedAt: Date.now() })); await refresh(); };
-  const restore = async (entry: VaultEntry) => { await vaultRequest('readwrite', store => store.put({ ...entry, deletedAt: null })); await refresh(); };
+  const runSingleAction = async (operation: () => Promise<unknown>) => {
+    setBusy(true); setError('');
+    try { await operation(); await refresh(); }
+    catch (e: any) { setError(e?.message || 'The video action could not be completed.'); }
+    finally { setBusy(false); }
+  };
+  const softDelete = async (entry: VaultEntry) => runSingleAction(() => vaultRequest('readwrite', store => store.put({ ...entry, deletedAt: Date.now() })));
+  const restore = async (entry: VaultEntry) => runSingleAction(() => vaultRequest('readwrite', store => store.put({ ...entry, deletedAt: null })));
   const permanentDelete = async (entry: VaultEntry) => {
     if (!window.confirm('Permanently delete this video from the CineMorph Vault? This cannot be undone.')) return;
-    await vaultRequest('readwrite', store => store.delete(entry.id)); await refresh();
+    await runSingleAction(() => vaultRequest('readwrite', store => store.delete(entry.id)));
   };
   const play = (entry: VaultEntry) => onPlayFile(new File([entry.blob], entry.name, { type: entry.type || 'video/mp4' }));
   const sizeLabel = (bytes: number) => bytes >= 1024 ** 3 ? (bytes / 1024 ** 3).toFixed(2) + ' GB' : (bytes / 1024 ** 2).toFixed(1) + ' MB';
 
   return <section className="mb-5 rounded-2xl border border-indigo-500/25 bg-slate-950/80 p-4">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div><h3 className="flex items-center gap-2 text-sm font-bold text-white"><Archive className="h-4 w-4 text-indigo-300" /> Local Video Vault</h3><p className="mt-1 text-[11px] text-slate-400">Store videos inside this app on this device. Files are not uploaded.</p></div>
+      <div><h3 className="flex items-center gap-2 text-sm font-bold text-white"><Archive className="h-4 w-4 text-indigo-300" /> Local Video Vault</h3><p className="mt-1 text-[11px] text-slate-400">Copy videos into this app's private local library on this device. Original files are not changed or deleted.</p></div>
       <label className="cursor-pointer rounded-lg bg-indigo-400 px-3 py-2 text-xs font-bold text-slate-950"><FolderOpen className="mr-1 inline h-3.5 w-3.5" /> Select videos<input className="hidden" type="file" multiple accept="video/*,.mkv,.avi,.mov,.webm,.mp4,.m4v" onChange={e => stageFiles(e.target.files)} /></label>
     </div>
     {staged.length > 0 && <div className="mt-3 rounded-xl border border-slate-800 p-3"><p className="mb-2 text-xs font-semibold text-slate-200">Selected files — tick the videos to add</p>
       <label className="mb-2 flex cursor-pointer items-center gap-2 text-[11px] font-semibold text-indigo-200"><input type="checkbox" checked={staged.length > 0 && selected.length === staged.length} onChange={e => setSelected(e.target.checked ? staged.map((_, i) => String(i)) : [])} /> Select all staged videos</label>
       {staged.map((f, i) => <label key={i} className="flex items-center gap-2 border-b border-slate-900 py-2 text-xs text-slate-300"><input type="checkbox" checked={selected.includes(String(i))} onChange={e => setSelected(old => e.target.checked ? [...old, String(i)] : old.filter(x => x !== String(i)))} /><span className="min-w-0 flex-1 truncate">{f.name}</span><span className="text-slate-500">{sizeLabel(f.size)}</span></label>)}
-      <button disabled={!selected.length || busy} onClick={moveToVault} className="mt-3 rounded-lg bg-amber-400 px-3 py-2 text-xs font-bold text-slate-950 disabled:opacity-40">{busy ? 'Saving…' : 'Move selected to Vault'}</button>
+      <button disabled={!selected.length || busy} onClick={moveToVault} className="mt-3 rounded-lg bg-amber-400 px-3 py-2 text-xs font-bold text-slate-950 disabled:opacity-40">{busy ? 'Saving…' : 'Copy selected to Vault'}</button>
     </div>}
     <div className="mt-4 flex gap-2"><button onClick={() => { setTab('vault'); setSelectedEntries([]); }} className={`rounded-lg px-3 py-2 text-xs font-semibold ${tab === 'vault' ? 'bg-indigo-400 text-slate-950' : 'bg-slate-900 text-slate-300'}`}>Vault ({entries.filter(e => !e.deletedAt).length})</button><button onClick={() => { setTab('bin'); setSelectedEntries([]); }} className={`rounded-lg px-3 py-2 text-xs font-semibold ${tab === 'bin' ? 'bg-indigo-400 text-slate-950' : 'bg-slate-900 text-slate-300'}`}>Recycle Bin ({entries.filter(e => !!e.deletedAt).length})</button></div>
     <div className="mt-3 flex flex-wrap gap-2">
